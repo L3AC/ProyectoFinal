@@ -9,7 +9,7 @@ public class Usuario {
     private String contrasena; 
     private String rol; 
     private boolean activo;
-
+ 
     // Constructor vacío
     public Usuario() {}
 

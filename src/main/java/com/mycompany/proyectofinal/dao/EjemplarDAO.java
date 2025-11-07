@@ -4,7 +4,7 @@ import com.mycompany.proyectofinal.modelo.Ejemplar;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
+ 
 public class EjemplarDAO {
 
     public void crearEjemplar(Ejemplar ejemplar) throws SQLException {

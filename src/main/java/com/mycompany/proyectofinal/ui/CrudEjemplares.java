@@ -4,10 +4,6 @@
  */
 package com.mycompany.proyectofinal.ui;
 
-/**
- *
- * @author LEAC2
- */
 public class CrudEjemplares extends javax.swing.JPanel {
 
     /**

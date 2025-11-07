@@ -1,11 +1,11 @@
-
+ 
 package com.mycompany.proyectofinal.dao;
 import com.mycompany.proyectofinal.modelo.Prestamo;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
+  
 public class PrestamoDAO {
 
     private final ConfiguracionDAO gestionConfig = new ConfiguracionDAO();
