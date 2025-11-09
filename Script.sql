@@ -1,58 +1,154 @@
--- Tabla de usuarios
-CREATE TABLE usuarios (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+-- -----------------------------------------------------
+-- Crear base de datos
+-- -----------------------------------------------------
+DROP DATABASE IF EXISTS biblioteca_don_bosco;
+CREATE DATABASE IF NOT EXISTS biblioteca_don_bosco;
+USE biblioteca_don_bosco;
+
+-- Tabla de Roles
+CREATE TABLE Roles (
+    id_rol INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_rol VARCHAR(50) NOT NULL UNIQUE,
+    cant_max_prestamo INT NOT NULL,
+    dias_prestamo INT NOT NULL,
+    mora_diaria DECIMAL(10,2) NOT NULL
+);
+
+-- Insertar roles
+INSERT INTO Roles (nombre_rol, cant_max_prestamo, dias_prestamo,mora_diaria)
+VALUES
+    ('Administrador', 0, 0,0), -- 0 indica sin límite o sin préstamo
+    ('Profesor', 6, 15,0.10),     -- 6 libros, 15 días
+    ('Alumno', 3, 7,0.10);        -- 3 libros, 7 días
+
+
+-- Tabla de Usuarios
+CREATE TABLE Usuarios (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    contrasena VARCHAR(255) NOT NULL,
-    tipo_usuario ENUM('administrador', 'profesor', 'alumno') NOT NULL,
-    estado_activo BOOLEAN DEFAULT TRUE
+    correo VARCHAR(100) UNIQUE,
+    contrasena VARCHAR(255) NOT NULL, -- Encriptada
+    id_rol INT NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES Roles(id_rol)
 );
 
--- Tipos de documentos (para normalización)
-CREATE TABLE tipos_documento (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(50) NOT NULL -- 'libro', 'revista', 'tesis', 'cd'
-);
-
--- Documentos (tabla base)
-CREATE TABLE documentos (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    titulo VARCHAR(255) NOT NULL,
-    tipo_documento_id INT NOT NULL,
-    ubicacion_fisica VARCHAR(100) NOT NULL,
-    cantidad_total INT NOT NULL,
-    cantidad_disponible INT NOT NULL,
-    FOREIGN KEY (tipo_documento_id) REFERENCES tipos_documento(id)
-);
-
--- Detalles específicos de libros
-CREATE TABLE libros (
-    documento_id INT PRIMARY KEY,
-    isbn VARCHAR(20),
+-- Tabla de Ejemplares (general)
+CREATE TABLE Ejemplares (
+    id_ejemplar INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(200) NOT NULL,
     autor VARCHAR(200),
-    editorial VARCHAR(150),
-    anio_publicacion INT,
-    FOREIGN KEY (documento_id) REFERENCES documentos(id) ON DELETE CASCADE
+    ubicacion VARCHAR(100),
+    tipo_documento ENUM('Libro', 'Diccionario', 'Mapas', 'Tesis', 'DVD', 'VHS', 'Cassettes', 'CD', 'Documento', 'Periodicos', 'Revistas') NOT NULL,
+    estado ENUM('Disponible', 'Prestado') DEFAULT 'Disponible'
 );
 
--- Préstamos
-CREATE TABLE prestamos (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    usuario_id INT NOT NULL,
-    documento_id INT NOT NULL,
-    fecha_prestamo DATE NOT NULL,
-    fecha_devolucion_esperada DATE NOT NULL,
-    fecha_devolucion_real DATE NULL,
-    mora_calculada DECIMAL(10,2) DEFAULT 0.00,
-    estado ENUM('activo', 'devuelto') DEFAULT 'activo',
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
-    FOREIGN KEY (documento_id) REFERENCES documentos(id)
+-- Tabla específica para Libros
+CREATE TABLE Libros (
+    id_ejemplar INT PRIMARY KEY,
+    isbn VARCHAR(20),
+    editorial VARCHAR(100),
+    edicion INT,
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
 );
 
--- Configuración del sistema
-CREATE TABLE configuracion (
-    id INT PRIMARY KEY DEFAULT 1,
-    max_prestamos_por_usuario INT DEFAULT 3,
-    mora_diaria DECIMAL(5,2) DEFAULT 1.00
+-- Tabla específica para Diccionarios
+CREATE TABLE Diccionarios (
+    id_ejemplar INT PRIMARY KEY,
+    idioma VARCHAR(50),
+    volumen INT,
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Mapas
+CREATE TABLE Mapas (
+    id_ejemplar INT PRIMARY KEY,
+    escala VARCHAR(50),
+    tipo_mapa VARCHAR(100), -- físico, político, etc.
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Tesis
+CREATE TABLE Tesis (
+    id_ejemplar INT PRIMARY KEY,
+    grado_academico VARCHAR(100), -- Licenciatura, Maestría, etc.
+    facultad VARCHAR(100),
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para DVDs
+CREATE TABLE DVDs (
+    id_ejemplar INT PRIMARY KEY,
+    duracion TIME,
+    genero VARCHAR(100),
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para VHS
+CREATE TABLE VHS (
+    id_ejemplar INT PRIMARY KEY,
+    duracion TIME,
+    genero VARCHAR(100),
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Cassettes
+CREATE TABLE Cassettes (
+    id_ejemplar INT PRIMARY KEY,
+    duracion TIME,
+    tipo_cinta VARCHAR(50), -- audio, video
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para CDs
+CREATE TABLE CDs (
+    id_ejemplar INT PRIMARY KEY,
+    duracion TIME,
+    genero VARCHAR(100),
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Documentos
+CREATE TABLE Documentos (
+    id_ejemplar INT PRIMARY KEY,
+    tipo_documento_detalle VARCHAR(100), -- informe, memorando, etc.
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Periódicos
+CREATE TABLE Periodicos (
+    id_ejemplar INT PRIMARY KEY,
+    fecha_publicacion DATE,
+    tipo_periodico VARCHAR(100), -- local, nacional, etc.
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla específica para Revistas
+CREATE TABLE Revistas (
+    id_ejemplar INT PRIMARY KEY,
+    fecha_publicacion DATE,
+    tipo_revista VARCHAR(100), -- científica, cultural, etc.
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
+);
+
+-- Tabla de Préstamos
+CREATE TABLE Prestamos (
+    id_prestamo INT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_ejemplar INT NOT NULL,
+    fecha_prestamo DATE NOT NULL DEFAULT (CURRENT_DATE),
+    fecha_limite DATE NOT NULL, -- Calculada según rol
+    estado ENUM('Activo', 'Devuelto') DEFAULT 'Activo',
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario),
+    FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar)
+);
+
+-- Tabla de Devoluciones
+CREATE TABLE Devoluciones (
+    id_devolucion INT PRIMARY KEY AUTO_INCREMENT,
+    id_prestamo INT NOT NULL,
+    fecha_devolucion DATE NOT NULL DEFAULT (CURRENT_DATE),
+    dias_retraso INT DEFAULT 0,
+    monto_mora DECIMAL(8,2) DEFAULT 0.00,
+    FOREIGN KEY (id_prestamo) REFERENCES Prestamos(id_prestamo)
 );
