@@ -1,199 +1,319 @@
- 
 package dao;
+
 import util.ConexionBD;
-import modelo.Prestamo;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-  
+import javax.swing.JOptionPane;
+import modelo.Ejemplar;
+import modelo.Prestamo;
+import modelo.Usuario;
+
 public class PrestamoDAO {
 
-    private final ConfiguracionDAO gestionConfig = new ConfiguracionDAO();
+    private static final Logger logger = LogManager.getLogger(PrestamoDAO.class);
 
-    public void realizarPrestamo(int idUsuario, int idEjemplar, LocalDate fechaDevolucionPrevista) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = ConexionBD.obtenerConexion();
-            conn.setAutoCommit(false); // Iniciar transacción
+    // === VALIDAR SI USUARIO TIENE MORA PENDIENTE ===
+    private boolean tieneMoraPendiente(Connection conn, int idUsuario) throws SQLException {
+        String sql = """
+            SELECT d.monto_mora
+            FROM Devoluciones d
+            JOIN Prestamos p ON d.id_prestamo = p.id_prestamo
+            WHERE p.id_usuario = ?
+              AND d.monto_mora > 0
+            LIMIT 1
+            """;
 
-            // 1. Verificar si el usuario existe y no tiene mora
-            String sqlUsuario = "SELECT rol FROM usuarios WHERE id = ? AND activo = TRUE";
-            try (PreparedStatement pstmtUsuario = conn.prepareStatement(sqlUsuario)) {
-                pstmtUsuario.setInt(1, idUsuario);
-                ResultSet rsUsuario = pstmtUsuario.executeQuery();
-                if (!rsUsuario.next()) {
-                    throw new SQLException("Usuario no encontrado o inactivo.");
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // Si hay al menos una, tiene mora
+            }
+        }
+    }
+
+    // === VERIFICAR LÍMITE DE PRÉSTAMOS ACTIVOS ===
+    private boolean haAlcanzadoLimitePrestamos(Connection conn, int idUsuario) throws SQLException {
+        String sqlRol = "SELECT r.cant_max_prestamo FROM Roles r JOIN Usuarios u ON u.id_rol = r.id_rol WHERE u.id_usuario = ?";
+        int cantMax = 0;
+        try (PreparedStatement ps = conn.prepareStatement(sqlRol)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cantMax = rs.getInt("cant_max_prestamo");
                 }
-                String rolUsuario = rsUsuario.getString("rol");
+            }
+        }
 
-                // Verificar mora (simplificado: busca préstamos no devueltos con fecha prevista vencida)
-                String sqlMora = "SELECT COUNT(*) FROM prestamos WHERE id_usuario = ? AND estado = 'Prestado' AND fecha_devolucion_prevista < ?";
-                try (PreparedStatement pstmtMora = conn.prepareStatement(sqlMora)) {
-                    pstmtMora.setInt(1, idUsuario);
-                    pstmtMora.setDate(2, Date.valueOf(LocalDate.now()));
-                    ResultSet rsMora = pstmtMora.executeQuery();
-                    if (rsMora.next() && rsMora.getInt(1) > 0) {
-                        throw new SQLException("El usuario tiene préstamos vencidos (en mora). No se puede realizar el préstamo.");
+        // Si es 0 (como Administrador), no hay límite
+        if (cantMax == 0) return false;
+
+        String sqlPrestamosActivos = "SELECT COUNT(*) AS activos FROM Prestamos WHERE id_usuario = ? AND estado = 'Activo'";
+        try (PreparedStatement ps = conn.prepareStatement(sqlPrestamosActivos)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int activos = rs.getInt("activos");
+                    return activos >= cantMax;
+                }
+            }
+        }
+        return false;
+    }
+
+    // === REGISTRAR PRÉSTAMO ===
+    public boolean registrarPrestamo(int idUsuario, int idEjemplar) {
+        String sqlInsertarPrestamo = """
+            INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, fecha_limite, estado)
+            VALUES (?, ?, ?, ?, 'Activo')
+            """;
+
+        try (Connection conn = ConexionBD.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // 1. Validar que el usuario exista y cargue su rol (implícito en las validaciones)
+            // 2. Verificar mora pendiente
+            if (tieneMoraPendiente(conn, idUsuario)) {
+                JOptionPane.showMessageDialog(null, "El usuario tiene mora pendiente.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                logger.warn("Préstamo rechazado: usuario con mora pendiente. ID: " + idUsuario);
+                return false;
+            }
+
+            // 3. Verificar límite de préstamos
+            if (haAlcanzadoLimitePrestamos(conn, idUsuario)) {
+                JOptionPane.showMessageDialog(null, "Límite de préstamos alcanzado.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                logger.warn("Préstamo rechazado: límite de préstamos alcanzado. ID: " + idUsuario);
+                return false;
+            }
+
+            // 4. Obtener días de préstamo desde el rol del usuario
+            String sqlDias = """
+                SELECT r.dias_prestamo
+                FROM Usuarios u
+                JOIN Roles r ON u.id_rol = r.id_rol
+                WHERE u.id_usuario = ?
+                """;
+            int diasPrestamo = 0;
+            try (PreparedStatement psDias = conn.prepareStatement(sqlDias)) {
+                psDias.setInt(1, idUsuario);
+                
+                try (ResultSet rs = psDias.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false; // Usuario no existe
                     }
+                    diasPrestamo = rs.getInt("dias_prestamo");
                 }
+            }
 
-                // 2. Verificar cantidad máxima de préstamos permitidos
-                int maxLibros = Integer.parseInt(gestionConfig.obtenerValorPorClave(rolUsuario.equals("Profesor") ? "max_libros_profesor" : "max_libros_alumno"));
-                String sqlPrestamosActuales = "SELECT COUNT(*) FROM prestamos WHERE id_usuario = ? AND estado = 'Prestado'";
-                try (PreparedStatement pstmtPrestamos = conn.prepareStatement(sqlPrestamosActuales)) {
-                    pstmtPrestamos.setInt(1, idUsuario);
-                    ResultSet rsPrestamos = pstmtPrestamos.executeQuery();
-                    if (rsPrestamos.next() && rsPrestamos.getInt(1) >= maxLibros) {
-                        throw new SQLException("El usuario ha alcanzado el límite de préstamos (" + maxLibros + ").");
+            // 5. Verificar que el ejemplar esté disponible
+            String sqlEjemplar = "SELECT estado FROM Ejemplares WHERE id_ejemplar = ?";
+            String estadoEjemplar;
+            try (PreparedStatement psEjem = conn.prepareStatement(sqlEjemplar)) {
+                psEjem.setInt(1, idEjemplar);
+                try (ResultSet rs = psEjem.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false; // Ejemplar no existe
                     }
+                    estadoEjemplar = rs.getString("estado");
                 }
             }
+            if (!"Disponible".equals(estadoEjemplar)) {
+                logger.warn("Préstamo fallido: ejemplar no disponible. ID: " + idEjemplar);
+                conn.rollback();
+                return false;
+            }
 
-            // 3. Verificar disponibilidad del ejemplar
-            String sqlEjemplar = "SELECT cantidad_disponible, estado FROM ejemplares WHERE id = ?";
-            try (PreparedStatement pstmtEjemplar = conn.prepareStatement(sqlEjemplar)) {
-                pstmtEjemplar.setInt(1, idEjemplar);
-                ResultSet rsEjemplar = pstmtEjemplar.executeQuery();
-                if (!rsEjemplar.next() || rsEjemplar.getInt("cantidad_disponible") <= 0 || !"Disponible".equals(rsEjemplar.getString("estado"))) {
-                    throw new SQLException("El ejemplar no está disponible para préstamo.");
+            // 6. Registrar préstamo
+            LocalDate fechaPrestamo = LocalDate.now();
+            LocalDate fechaLimite = fechaPrestamo.plusDays(diasPrestamo);
+
+            try (PreparedStatement ps = conn.prepareStatement(sqlInsertarPrestamo, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, idUsuario);
+                ps.setInt(2, idEjemplar);
+                ps.setDate(3, Date.valueOf(fechaPrestamo));
+                ps.setDate(4, Date.valueOf(fechaLimite));
+
+                if (ps.executeUpdate() == 0) {
+                    conn.rollback();
+                    return false;
                 }
-            }
 
-            // 4. Registrar el préstamo
-            String sqlPrestamo = "INSERT INTO prestamos (id_usuario, id_ejemplar, fecha_prestamo, fecha_devolucion_prevista) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement pstmtPrestamo = conn.prepareStatement(sqlPrestamo, Statement.RETURN_GENERATED_KEYS)) {
-                pstmtPrestamo.setInt(1, idUsuario);
-                pstmtPrestamo.setInt(2, idEjemplar);
-                pstmtPrestamo.setDate(3, Date.valueOf(LocalDate.now()));
-                pstmtPrestamo.setDate(4, Date.valueOf(fechaDevolucionPrevista));
-                pstmtPrestamo.executeUpdate();
-
-                ResultSet rsPrestamoId = pstmtPrestamo.getGeneratedKeys();
-                int idPrestamo = -1;
-                if (rsPrestamoId.next()) {
-                    idPrestamo = rsPrestamoId.getInt(1);
+                // 7. Actualizar estado del ejemplar a 'Prestado'
+                String sqlActualizarEjemplar = "UPDATE Ejemplares SET estado = 'Prestado' WHERE id_ejemplar = ?";
+                try (PreparedStatement psUpd = conn.prepareStatement(sqlActualizarEjemplar)) {
+                    psUpd.setInt(1, idEjemplar);
+                    psUpd.executeUpdate();
                 }
-                System.out.println("Préstamo registrado exitosamente con ID: " + idPrestamo);
+
+                conn.commit();
+                logger.info("Préstamo registrado: Usuario={}, Ejemplar={}, Límite={}", idUsuario, idEjemplar, fechaLimite);
+                return true;
             }
 
-            // 5. Actualizar cantidad disponible del ejemplar
-            String sqlActualizarEjemplar = "UPDATE ejemplares SET cantidad_disponible = cantidad_disponible - 1, estado = CASE WHEN cantidad_disponible - 1 = 0 THEN 'Prestado' ELSE estado END WHERE id = ?";
-            try (PreparedStatement pstmtActualizarEjemplar = conn.prepareStatement(sqlActualizarEjemplar)) {
-                pstmtActualizarEjemplar.setInt(1, idEjemplar);
-                pstmtActualizarEjemplar.executeUpdate();
-            }
-
-            conn.commit(); // Confirmar transacción
-            System.out.println("Préstamo realizado y stock actualizado correctamente.");
         } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback(); // Deshacer cambios si hay error
-            }
-            System.err.println("Error al realizar el préstamo: " + e.getMessage());
-            throw e; // Relanzar para que la interfaz lo maneje
-        } finally {
-            if (conn != null) {
-                conn.setAutoCommit(true); // Restaurar auto-commit
-                conn.close();
-            }
+            logger.error("Error al registrar préstamo: usuario=" + idUsuario + ", ejemplar=" + idEjemplar, e);
+            return false;
         }
     }
 
+    // === REGISTRAR DEVOLUCIÓN Y CALCULAR MORA ===
+    public boolean registrarDevolucion(int idPrestamo, LocalDate fechaDevolucion) {
+        String sqlPrestamo = """
+            SELECT p.id_usuario, p.id_ejemplar, p.fecha_limite, p.estado
+            FROM Prestamos p
+            WHERE p.id_prestamo = ?
+            """;
 
-    public void registrarDevolucion(int idPrestamo) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = ConexionBD.obtenerConexion();
-            conn.setAutoCommit(false); // Iniciar transacción
+        try (Connection conn = ConexionBD.getConnection()) {
+            conn.setAutoCommit(false);
 
-            // 1. Obtener detalles del préstamo
-            String sqlPrestamo = "SELECT id_ejemplar, fecha_devolucion_real FROM prestamos WHERE id = ?";
-            int idEjemplar;
-            try (PreparedStatement pstmtPrestamo = conn.prepareStatement(sqlPrestamo)) {
-                pstmtPrestamo.setInt(1, idPrestamo);
-                ResultSet rs = pstmtPrestamo.executeQuery();
-                if (!rs.next() || rs.getDate("fecha_devolucion_real") != null) {
-                    throw new SQLException("Préstamo no encontrado o ya devuelto.");
+            Prestamo prestamo;
+            try (PreparedStatement ps = conn.prepareStatement(sqlPrestamo)) {
+                ps.setInt(1, idPrestamo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        logger.warn("Devolución fallida: préstamo no encontrado. ID: " + idPrestamo);
+                        return false;
+                    }
+                    if ("Devuelto".equals(rs.getString("estado"))) {
+                        logger.warn("Devolución fallida: préstamo ya devuelto. ID: " + idPrestamo);
+                        return false;
+                    }
+
+                    int idUsuario = rs.getInt("id_usuario");
+                    int idEjemplar = rs.getInt("id_ejemplar");
+                    LocalDate fechaLimite = rs.getDate("fecha_limite").toLocalDate();
+
+                    // Calcular mora
+                    int diasRetraso = 0;
+                    double montoMora = 0.0;
+
+                    if (fechaDevolucion.isAfter(fechaLimite)) {
+                        diasRetraso = (int) java.time.temporal.ChronoUnit.DAYS.between(fechaLimite, fechaDevolucion);
+                        // Obtener mora diaria del rol del usuario
+                        String sqlMoraDiaria = """
+                            SELECT r.mora_diaria
+                            FROM Usuarios u
+                            JOIN Roles r ON u.id_rol = r.id_rol
+                            WHERE u.id_usuario = ?
+                            """;
+                        try (PreparedStatement psMora = conn.prepareStatement(sqlMoraDiaria)) {
+                            psMora.setInt(1, idUsuario);
+                            try (ResultSet rsMora = psMora.executeQuery()) {
+                                if (rsMora.next()) {
+                                    double moraDiaria = rsMora.getDouble("mora_diaria");
+                                    montoMora = diasRetraso * moraDiaria;
+                                }
+                            }
+                        }
+                    }
+
+                    // Insertar devolución
+                    String sqlInsertarDevolucion = """
+                        INSERT INTO Devoluciones (id_prestamo, fecha_devolucion, dias_retraso, monto_mora)
+                        VALUES (?, ?, ?, ?)
+                        """;
+                    try (PreparedStatement psIns = conn.prepareStatement(sqlInsertarDevolucion)) {
+                        psIns.setInt(1, idPrestamo);
+                        psIns.setDate(2, Date.valueOf(fechaDevolucion));
+                        psIns.setInt(3, diasRetraso);
+                        psIns.setBigDecimal(4, java.math.BigDecimal.valueOf(montoMora));
+                        psIns.executeUpdate();
+                    }
+
+                    // Actualizar estado del préstamo
+                    String sqlActualizarPrestamo = "UPDATE Prestamos SET estado = 'Devuelto' WHERE id_prestamo = ?";
+                    try (PreparedStatement psUpd = conn.prepareStatement(sqlActualizarPrestamo)) {
+                        psUpd.setInt(1, idPrestamo);
+                        psUpd.executeUpdate();
+                    }
+
+                    // Actualizar estado del ejemplar
+                    String sqlActualizarEjemplar = "UPDATE Ejemplares SET estado = 'Disponible' WHERE id_ejemplar = ?";
+                    try (PreparedStatement psUpdEj = conn.prepareStatement(sqlActualizarEjemplar)) {
+                        psUpdEj.setInt(1, idEjemplar);
+                        psUpdEj.executeUpdate();
+                    }
+
+                    conn.commit();
+                    logger.info("Devolución registrada: Préstamo={}, Retraso={} días, Mora=${}", idPrestamo, diasRetraso, montoMora);
+                    return true;
                 }
-                idEjemplar = rs.getInt("id_ejemplar");
             }
 
-            // 2. Actualizar el préstamo
-            String sqlActualizarPrestamo = "UPDATE prestamos SET fecha_devolucion_real = ?, estado = 'Devuelto' WHERE id = ?";
-            try (PreparedStatement pstmtActualizarPrestamo = conn.prepareStatement(sqlActualizarPrestamo)) {
-                pstmtActualizarPrestamo.setDate(1, Date.valueOf(LocalDate.now()));
-                pstmtActualizarPrestamo.setInt(2, idPrestamo);
-                pstmtActualizarPrestamo.executeUpdate();
-            }
-
-            // 3. Actualizar cantidad disponible del ejemplar
-            String sqlActualizarEjemplar = "UPDATE ejemplares SET cantidad_disponible = cantidad_disponible + 1, estado = CASE WHEN cantidad_disponible + 1 = cantidad_total THEN 'Disponible' ELSE estado END WHERE id = ?";
-            try (PreparedStatement pstmtActualizarEjemplar = conn.prepareStatement(sqlActualizarEjemplar)) {
-                pstmtActualizarEjemplar.setInt(1, idEjemplar);
-                pstmtActualizarEjemplar.executeUpdate();
-            }
-
-            conn.commit(); // Confirmar transacción
-            System.out.println("Devolución registrada exitosamente.");
         } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback(); // Deshacer cambios si hay error
-            }
-            System.err.println("Error al registrar la devolución: " + e.getMessage());
-            throw e; // Relanzar para que la interfaz lo maneje
-        } finally {
-            if (conn != null) {
-                conn.setAutoCommit(true); // Restaurar auto-commit
-                conn.close();
-            }
+            logger.error("Error al registrar devolución para préstamo ID: " + idPrestamo, e);
+            return false;
         }
     }
 
-    public List<Prestamo> listarPrestamos() throws SQLException {
-        List<Prestamo> prestamos = new ArrayList<>();
-        String sql = "SELECT * FROM prestamos ORDER BY fecha_prestamo DESC";
+    // === LISTAR PRÉSTAMOS ACTIVOS DE UN USUARIO ===
+    public List<Prestamo> listarPrestamosActivosPorUsuario(int idUsuario) {
+        List<Prestamo> lista = new ArrayList<>();
+        String sql = """
+            SELECT id_prestamo, id_usuario, id_ejemplar, fecha_prestamo, fecha_limite, estado
+            FROM Prestamos
+            WHERE id_usuario = ? AND estado = 'Activo'
+            ORDER BY fecha_prestamo DESC
+            """;
+
         try (Connection conn = ConexionBD.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Prestamo p = new Prestamo();
-                p.setId(rs.getInt("id"));
-                p.setIdUsuario(rs.getInt("id_usuario"));
-                p.setIdEjemplar(rs.getInt("id_ejemplar"));
-                p.setFechaPrestamo(rs.getDate("fecha_prestamo").toLocalDate());
-                p.setFechaDevolucionPrevista(rs.getDate("fecha_devolucion_prevista").toLocalDate());
-                Date fechaReal = rs.getDate("fecha_devolucion_real");
-                p.setFechaDevolucionReal(fechaReal != null ? fechaReal.toLocalDate() : null);
-                p.setEstado(rs.getString("estado"));
-                prestamos.add(p);
-            }
-        }
-        return prestamos;
-    }
-
-    // Método para calcular mora (simplificado: solo imprime o retorna el valor, la lógica de cobro iría en otra parte)
-    public double calcularMora(int idPrestamo) throws SQLException {
-        String sql = "SELECT fecha_devolucion_prevista FROM prestamos WHERE id = ? AND estado = 'Prestado'";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idPrestamo);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                LocalDate fechaPrevista = rs.getDate("fecha_devolucion_prevista").toLocalDate();
-                LocalDate hoy = LocalDate.now();
-                if (hoy.isAfter(fechaPrevista)) {
-                    long diasMora = java.time.temporal.ChronoUnit.DAYS.between(fechaPrevista, hoy);
-                    double moraDiaria = Double.parseDouble(gestionConfig.obtenerValorPorClave("mora_diaria"));
-                    double totalMora = diasMora * moraDiaria;
-                    System.out.println("Préstamo ID " + idPrestamo + " tiene " + diasMora + " días de mora. Total: $" + totalMora);
-                    return totalMora;
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Prestamo p = new Prestamo();
+                    p.setIdPrestamo(rs.getInt("id_prestamo"));
+                    p.setUsuario(new Usuario()); // Podrías cargarlo completo si lo necesitas
+                    p.getUsuario().setIdUsuario(rs.getInt("id_usuario"));
+                    p.setEjemplar(new Ejemplar());
+                    p.getEjemplar().setIdEjemplar(rs.getInt("id_ejemplar"));
+                    p.setFechaPrestamo(rs.getDate("fecha_prestamo").toLocalDate());
+                    p.setFechaLimite(rs.getDate("fecha_limite").toLocalDate());
+                    p.setEstado(Prestamo.EstadoPrestamo.valueOf(rs.getString("estado")));
+                    lista.add(p);
                 }
             }
+        } catch (SQLException e) {
+            logger.error("Error al listar préstamos activos del usuario: " + idUsuario, e);
         }
-        return 0.0; // No hay mora o no encontrado
+        return lista;
+    }
+
+    // === BUSCAR PRÉSTAMO POR ID ===
+    public Prestamo obtenerPrestamoPorId(int idPrestamo) {
+        String sql = """
+            SELECT id_prestamo, id_usuario, id_ejemplar, fecha_prestamo, fecha_limite, estado
+            FROM Prestamos
+            WHERE id_prestamo = ?
+            """;
+
+        try (Connection conn = ConexionBD.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idPrestamo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Prestamo p = new Prestamo();
+                    p.setIdPrestamo(rs.getInt("id_prestamo"));
+                    p.setUsuario(new Usuario());
+                    p.getUsuario().setIdUsuario(rs.getInt("id_usuario"));
+                    p.setEjemplar(new Ejemplar());
+                    p.getEjemplar().setIdEjemplar(rs.getInt("id_ejemplar"));
+                    p.setFechaPrestamo(rs.getDate("fecha_prestamo").toLocalDate());
+                    p.setFechaLimite(rs.getDate("fecha_limite").toLocalDate());
+                    p.setEstado(Prestamo.EstadoPrestamo.valueOf(rs.getString("estado")));
+                    return p;
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error al obtener préstamo por ID: " + idPrestamo, e);
+        }
+        return null;
     }
 }
