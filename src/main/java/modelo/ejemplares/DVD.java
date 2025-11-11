@@ -1,0 +1,27 @@
+
+package modelo.ejemplares;
+import modelo.Ejemplar;
+
+import java.time.LocalTime;
+
+public class DVD extends Ejemplar {
+    private LocalTime duracion;
+    private String genero;
+
+    public DVD() {
+        setTipoDocumento(TipoDocumento.DVD);
+    }
+
+    public DVD(Integer idEjemplar, String titulo, String autor, String ubicacion,
+               Estado estado, LocalTime duracion, String genero) {
+        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.DVD, estado);
+        this.duracion = duracion;
+        this.genero = genero;
+    }
+
+    public LocalTime getDuracion() { return duracion; }
+    public void setDuracion(LocalTime duracion) { this.duracion = duracion; }
+
+    public String getGenero() { return genero; }
+    public void setGenero(String genero) { this.genero = genero; }
+}
