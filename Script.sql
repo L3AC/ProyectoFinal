@@ -21,21 +21,10 @@ VALUES
     ('Profesor', 6, 15,0.10),     -- 6 libros, 15 días
     ('Alumno', 3, 7,0.10);        -- 3 libros, 7 días
 
-
--- Tabla de Usuarios
-CREATE TABLE Usuarios (
-    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    correo VARCHAR(100) UNIQUE,
-    contrasena VARCHAR(255) NOT NULL, -- Encriptada
-    id_rol INT NOT NULL,
-    FOREIGN KEY (id_rol) REFERENCES Roles(id_rol)
-);
-
 -- Tabla de Ejemplares (general)
 CREATE TABLE Ejemplares (
     id_ejemplar INT PRIMARY KEY AUTO_INCREMENT,
+    codigo_ejemplar VARCHAR(50) UNIQUE NOT NULL,  -- <<-- Nuevo campo
     titulo VARCHAR(200) NOT NULL,
     autor VARCHAR(200),
     ubicacion VARCHAR(100),
@@ -131,6 +120,20 @@ CREATE TABLE Revistas (
     FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar) ON DELETE CASCADE
 );
 
+-- Tabla de Usuarios
+CREATE TABLE Usuarios (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) UNIQUE,
+    contrasena VARCHAR(255) NOT NULL, -- Encriptada
+    id_rol INT NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES Roles(id_rol)
+);
+
+INSERT INTO Usuarios (nombre, apellido, correo, contrasena, id_rol)
+VALUES ('admin', 'admin', 'admin@admin.udb.edu.sv', 
+'$2a$10$6SNYnsJROk3eubVhAgS/rudlBpN8fC9XmMuPC0l8svopDdfPr3rcO', 1);
 -- Tabla de Préstamos
 CREATE TABLE Prestamos (
     id_prestamo INT PRIMARY KEY AUTO_INCREMENT,
@@ -142,6 +145,8 @@ CREATE TABLE Prestamos (
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario),
     FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar)
 );
+
+
 
 -- Tabla de Devoluciones
 CREATE TABLE Devoluciones (
