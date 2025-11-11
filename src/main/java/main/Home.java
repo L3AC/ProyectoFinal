@@ -5,6 +5,8 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import modelo.Usuario;
+import ui.CrudEjemplares;
 
 public class Home extends javax.swing.JFrame {
 
@@ -13,6 +15,10 @@ public class Home extends javax.swing.JFrame {
     private ImageIcon icono;
 
     public Home() {
+        
+    }
+
+    public Home(Usuario usuario) {
         initComponents();
         pintarImagen(lbIcono, "/com/mycompany/proyectofinal/img/udb.png");
     }
@@ -127,17 +133,17 @@ public class Home extends javax.swing.JFrame {
                 .addComponent(lbIcono, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbTitulo1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(36, 36, 36)
                 .addComponent(lbOpcion1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(27, 27, 27)
                 .addComponent(lbOpcion2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(23, 23, 23)
+                .addGap(18, 18, 18)
                 .addComponent(lbOpcion3, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
+                .addGap(18, 18, 18)
                 .addComponent(lbOpcion4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
+                .addGap(28, 28, 28)
                 .addComponent(lbOpcion5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
 
         jPanel3.add(menuPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 480));
@@ -156,7 +162,7 @@ public class Home extends javax.swing.JFrame {
     }//GEN-LAST:event_lbOpcion1MouseClicked
 
     private void lbOpcion2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion2MouseClicked
-        // TODO add your handling code here:
+        cargarPanel(new CrudEjemplares());
     }//GEN-LAST:event_lbOpcion2MouseClicked
 
     private void lbOpcion3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseClicked
