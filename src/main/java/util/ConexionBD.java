@@ -14,7 +14,7 @@ public class ConexionBD {
     private static final String USUARIO = "root"; 
     private static final String CONTRASENA = "";
 
-    public static Connection obtenerConexion() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(URL, USUARIO, CONTRASENA);
