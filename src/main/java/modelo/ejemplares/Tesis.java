@@ -9,9 +9,9 @@ public class Tesis extends Ejemplar {
         setTipoDocumento(TipoDocumento.Tesis);
     }
 
-    public Tesis(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Tesis(Integer idEjemplar, String codigoEjemplar,String titulo, String autor, String ubicacion,
                  Estado estado, String gradoAcademico, String facultad) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Tesis, estado);
+        super(idEjemplar,  codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Tesis, estado);
         this.gradoAcademico = gradoAcademico;
         this.facultad = facultad;
     }

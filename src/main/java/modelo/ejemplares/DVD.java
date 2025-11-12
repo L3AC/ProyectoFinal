@@ -12,9 +12,9 @@ public class DVD extends Ejemplar {
         setTipoDocumento(TipoDocumento.DVD);
     }
 
-    public DVD(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public DVD(Integer idEjemplar, String codigoEjemplar,String titulo, String autor, String ubicacion,
                Estado estado, LocalTime duracion, String genero) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.DVD, estado);
+        super(idEjemplar, codigoEjemplar, titulo, autor, ubicacion, TipoDocumento.DVD, estado);
         this.duracion = duracion;
         this.genero = genero;
     }

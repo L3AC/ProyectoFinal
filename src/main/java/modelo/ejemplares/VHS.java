@@ -9,9 +9,9 @@ public class VHS extends Ejemplar {
 
     public VHS() { setTipoDocumento(TipoDocumento.VHS); }
 
-    public VHS(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public VHS(Integer idEjemplar, String codigoEjemplar,String titulo, String autor, String ubicacion,
                Estado estado, LocalTime duracion, String genero) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.VHS, estado);
+        super(idEjemplar, codigoEjemplar, titulo, autor, ubicacion, TipoDocumento.VHS, estado);
         this.duracion = duracion;
         this.genero = genero;
     }

@@ -10,9 +10,9 @@ public class Documento extends Ejemplar {
         setTipoDocumento(TipoDocumento.Documento);
     }
 
-    public Documento(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Documento(Integer idEjemplar,String codigoEjemplar, String titulo, String autor, String ubicacion,
                      Estado estado, String tipoDocumentoDetalle) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Documento, estado);
+        super(idEjemplar,  codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Documento, estado);
         this.tipoDocumentoDetalle = tipoDocumentoDetalle;
     }
 

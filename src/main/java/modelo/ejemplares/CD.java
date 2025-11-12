@@ -10,9 +10,9 @@ public class CD extends Ejemplar {
 
     public CD() { setTipoDocumento(TipoDocumento.CD); }
 
-    public CD(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public CD(Integer idEjemplar,String codigoEjemplar, String titulo, String autor, String ubicacion,
               Estado estado, LocalTime duracion, String genero) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.CD, estado);
+        super(idEjemplar,codigoEjemplar, titulo, autor, ubicacion, TipoDocumento.CD, estado);
         this.duracion = duracion;
         this.genero = genero;
     }

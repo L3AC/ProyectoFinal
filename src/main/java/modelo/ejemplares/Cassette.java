@@ -10,9 +10,9 @@ public class Cassette extends Ejemplar {
 
     public Cassette() { setTipoDocumento(TipoDocumento.Cassettes); }
 
-    public Cassette(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Cassette(Integer idEjemplar,String codigoEjemplar, String titulo, String autor, String ubicacion,
                     Estado estado, LocalTime duracion, String tipoCinta) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Cassettes, estado);
+        super(idEjemplar, codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Cassettes, estado);
         this.duracion = duracion;
         this.tipoCinta = tipoCinta;
     }

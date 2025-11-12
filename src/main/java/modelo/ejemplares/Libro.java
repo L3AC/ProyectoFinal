@@ -12,9 +12,9 @@ public class Libro extends Ejemplar {
         setTipoDocumento(TipoDocumento.Libro);
     }
 
-    public Libro(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Libro(Integer idEjemplar,String codigoEjemplar, String titulo, String autor, String ubicacion,
                  Estado estado, String isbn, String editorial, Integer edicion) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Libro, estado);
+        super(idEjemplar, codigoEjemplar, titulo, autor, ubicacion, TipoDocumento.Libro, estado);
         this.isbn = isbn;
         this.editorial = editorial;
         this.edicion = edicion;

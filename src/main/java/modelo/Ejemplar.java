@@ -10,6 +10,7 @@ public class Ejemplar {
     }
 
     private Integer idEjemplar;
+    private String codigoEjemplar; 
     private String titulo;
     private String autor;
     private String ubicacion;
@@ -17,8 +18,11 @@ public class Ejemplar {
     private Estado estado;
 
     public Ejemplar() {}
-    public Ejemplar(Integer idEjemplar, String titulo, String autor, String ubicacion, TipoDocumento tipoDocumento, Estado estado) {
+
+    public Ejemplar(Integer idEjemplar, String codigoEjemplar, String titulo, String autor, 
+                    String ubicacion, TipoDocumento tipoDocumento, Estado estado) {
         this.idEjemplar = idEjemplar;
+        this.codigoEjemplar = codigoEjemplar;
         this.titulo = titulo;
         this.autor = autor;
         this.ubicacion = ubicacion;
@@ -26,7 +30,17 @@ public class Ejemplar {
         this.estado = estado;
     }
 
-    // Getters y Setters
+    // Getters y Setters (incluyendo para codigoEjemplar)
+
+    public String getCodigoEjemplar() {
+        return codigoEjemplar;
+    }
+
+    public void setCodigoEjemplar(String codigoEjemplar) {
+        this.codigoEjemplar = codigoEjemplar;
+    }
+
+    // ... resto de getters y setters ya existentes
 
     public Integer getIdEjemplar() {
         return idEjemplar;
@@ -75,5 +89,4 @@ public class Ejemplar {
     public void setEstado(Estado estado) {
         this.estado = estado;
     }
-    
 }

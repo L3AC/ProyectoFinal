@@ -10,9 +10,9 @@ public class Diccionario extends Ejemplar {
         setTipoDocumento(TipoDocumento.Diccionario);
     }
 
-    public Diccionario(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Diccionario(Integer idEjemplar,String codigoEjemplar, String titulo, String autor, String ubicacion,
                        Estado estado, String idioma, Integer volumen) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Diccionario, estado);
+        super(idEjemplar,  codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Diccionario, estado);
         this.idioma = idioma;
         this.volumen = volumen;
     }

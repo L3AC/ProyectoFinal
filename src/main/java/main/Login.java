@@ -3,13 +3,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package main;
- 
+
+import dao.UsuarioDAO;
+import javax.swing.JOptionPane;
+import modelo.Usuario;
+import util.Validacion;
+
 /**
  *
  * @author LEAC2
  */
 public class Login extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Login.class.getName());
 
     /**
@@ -17,6 +22,10 @@ public class Login extends javax.swing.JFrame {
      */
     public Login() {
         initComponents();
+        // Nota: esto es un regex progresivo (sin ^ $ porque matches() exige match completo)
+        Validacion.permitirSolo(txtCorreo, "[A-Za-z0-9@._+\\-]*", 50);
+
+        Validacion.permitirSolo(txtContra, "^[A-Za-z0-9@#$%^&+=!]{0,20}$", 20);
     }
 
     /**
@@ -28,21 +37,117 @@ public class Login extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnIngresar = new javax.swing.JButton();
+        lbU = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        txtCorreo = new javax.swing.JTextField();
+        txtContra = new javax.swing.JTextField();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        btnIngresar.setText("Ingresar");
+        btnIngresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnIngresarActionPerformed(evt);
+            }
+        });
+
+        lbU.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbU.setText("Correo");
+
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Contraseña");
+        jLabel2.setToolTipText("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(130, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(184, 184, 184))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(lbU, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(195, 195, 195))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnIngresar, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(183, 183, 183))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtContra, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(117, 117, 117))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(81, Short.MAX_VALUE)
+                .addComponent(lbU)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtContra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(38, 38, 38)
+                .addComponent(btnIngresar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(54, 54, 54))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
+        // TODO add your handling code here:
+        handleLogin(txtCorreo.getText(),txtContra.getText());
+    }//GEN-LAST:event_btnIngresarActionPerformed
+
+    private UsuarioDAO usuarioDAO = new UsuarioDAO();
+
+    // Este método se llamaría al hacer clic en el botón "Iniciar Sesión"
+    public void handleLogin(String correo, String contrasena) {
+        if (correo == null || correo.trim().isEmpty() || contrasena == null || contrasena.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Complete todos los campos.");
+            return;
+        }
+
+        Usuario usuarioAutenticado = usuarioDAO.login(correo.trim(), contrasena);
+
+        if (usuarioAutenticado != null) {
+            abrirVentanaPrincipal(usuarioAutenticado);
+        } else {
+            // ❌ Credenciales inválidas
+            JOptionPane.showMessageDialog(this, "Credenciales erroneas.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void abrirVentanaPrincipal(Usuario usuario) {
+        String rol = usuario.getRol().getNombreRol();
+        // Redirigir según el rol
+        switch (rol.toLowerCase()) {
+            case "administrador":
+                Home home = new Home(usuario);
+                home.setVisible(true);
+                dispose();
+                // abrirVentanaAdmin();
+                break;
+            case "profesor":
+                // abrirVentanaProfesor();
+                break;
+            case "alumno":
+                // abrirVentanaAlumno();
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Rol no reconocido.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+
+                return;
+        }
+        // Cerrar la ventana de login
+        System.out.println("Bienvenido, " + usuario.getNombre() + " (" + rol + ")");
+    }
 
     /**
      * @param args the command line arguments
@@ -70,5 +175,10 @@ public class Login extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnIngresar;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel lbU;
+    private javax.swing.JTextField txtContra;
+    private javax.swing.JTextField txtCorreo;
     // End of variables declaration//GEN-END:variables
 }
