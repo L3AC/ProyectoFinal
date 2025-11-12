@@ -146,8 +146,6 @@ CREATE TABLE Prestamos (
     FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar)
 );
 
-
-
 -- Tabla de Devoluciones
 CREATE TABLE Devoluciones (
     id_devolucion INT PRIMARY KEY AUTO_INCREMENT,
@@ -157,3 +155,50 @@ CREATE TABLE Devoluciones (
     monto_mora DECIMAL(8,2) DEFAULT 0.00,
     FOREIGN KEY (id_prestamo) REFERENCES Prestamos(id_prestamo)
 );
+
+INSERT INTO Ejemplares (codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado) VALUES
+('LIB00001', 'Cien años de soledad', 'Gabriel García Márquez', 'Estantería A1', 'Libro', 'Disponible'),
+('REV00001', 'National Geographic', 'Varios', 'Sala de lectura', 'Revistas', 'Disponible'),
+('CDA00001', 'Best of Classic Music', 'Varios', 'Archivo audio', 'CD', 'Disponible'),
+('DVD00001', 'Inception', 'Christopher Nolan', 'Archivo video', 'DVD', 'Prestado'),
+('DIC00001', 'Diccionario de la Lengua Española', 'Real Academia Española', 'Consulta', 'Diccionario', 'Disponible'),
+('MAP00001', 'Mapa físico de Sudamérica', 'IGN', 'Archivo mapas', 'Mapas', 'Disponible'),
+('TES00001', 'Análisis de estructuras de datos', 'Juan Pérez', 'Archivo tesis', 'Tesis', 'Disponible'),
+('VHS00001', 'Back to the Future', 'Robert Zemeckis', 'Archivo video', 'VHS', 'Disponible'),
+('CAS00001', 'Historia del rock', 'Varios', 'Archivo audio', 'Cassettes', 'Disponible'),
+('DOC00001', 'Informe de auditoría 2023', 'Departamento de auditoría', 'Archivo administrativo', 'Documento', 'Disponible'),
+('PER00001', 'El País', 'Varios', 'Sala de lectura', 'Periodicos', 'Disponible');
+
+-- Insertar datos específicos en las tablas hijas
+INSERT INTO Libros (id_ejemplar, isbn, editorial, edicion) VALUES
+(1, '978-3-16-148410-0', 'Sudamericana', 1);
+
+INSERT INTO Revistas (id_ejemplar, fecha_publicacion, tipo_revista) VALUES
+(2, '2023-05-15', 'Científica');
+
+INSERT INTO CDs (id_ejemplar, duracion, genero) VALUES
+(3, '01:45:00', 'Clásica');
+
+INSERT INTO DVDs (id_ejemplar, duracion, genero) VALUES
+(4, '02:28:00', 'Ciencia Ficción');
+
+INSERT INTO Diccionarios (id_ejemplar, idioma, volumen) VALUES
+(5, 'Español', 1);
+
+INSERT INTO Mapas (id_ejemplar, escala, tipo_mapa) VALUES
+(6, '1:5000000', 'Físico');
+
+INSERT INTO Tesis (id_ejemplar, grado_academico, facultad) VALUES
+(7, 'Maestría', 'Facultad de Ingeniería');
+
+INSERT INTO VHS (id_ejemplar, duracion, genero) VALUES
+(8, '01:40:00', 'Comedia');
+
+INSERT INTO Cassettes (id_ejemplar, duracion, tipo_cinta) VALUES
+(9, '01:30:00', 'Audio');
+
+INSERT INTO Documentos (id_ejemplar, tipo_documento_detalle) VALUES
+(10, 'Informe');
+
+INSERT INTO Periodicos (id_ejemplar, fecha_publicacion, tipo_periodico) VALUES
+(11, '2023-06-01', 'Nacional');
