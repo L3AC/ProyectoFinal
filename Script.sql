@@ -134,6 +134,7 @@ CREATE TABLE Usuarios (
 INSERT INTO Usuarios (nombre, apellido, correo, contrasena, id_rol)
 VALUES ('admin', 'admin', 'admin@admin.udb.edu.sv', 
 '$2a$10$6SNYnsJROk3eubVhAgS/rudlBpN8fC9XmMuPC0l8svopDdfPr3rcO', 1);
+
 -- Tabla de Préstamos
 CREATE TABLE Prestamos (
     id_prestamo INT PRIMARY KEY AUTO_INCREMENT,
@@ -142,20 +143,14 @@ CREATE TABLE Prestamos (
     fecha_prestamo DATE NOT NULL DEFAULT (CURRENT_DATE),
     fecha_limite DATE NOT NULL, -- Calculada según rol
     estado ENUM('Activo', 'Devuelto') DEFAULT 'Activo',
+    fecha_devolucion DATE NULL, -- Se actualiza al devolver
+    dias_retraso INT DEFAULT 0,
+    monto_mora DECIMAL(8,2) DEFAULT 0.00,
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario),
     FOREIGN KEY (id_ejemplar) REFERENCES Ejemplares(id_ejemplar)
 );
 
--- Tabla de Devoluciones
-CREATE TABLE Devoluciones (
-    id_devolucion INT PRIMARY KEY AUTO_INCREMENT,
-    id_prestamo INT NOT NULL,
-    fecha_devolucion DATE NOT NULL DEFAULT (CURRENT_DATE),
-    dias_retraso INT DEFAULT 0,
-    monto_mora DECIMAL(8,2) DEFAULT 0.00,
-    FOREIGN KEY (id_prestamo) REFERENCES Prestamos(id_prestamo)
-);
-
+-- Insertar ejemplares en la tabla general
 INSERT INTO Ejemplares (codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado) VALUES
 ('LIB00001', 'Cien años de soledad', 'Gabriel García Márquez', 'Estantería A1', 'Libro', 'Disponible'),
 ('REV00001', 'National Geographic', 'Varios', 'Sala de lectura', 'Revistas', 'Disponible'),
