@@ -10,9 +10,9 @@ public class Mapa extends Ejemplar {
         setTipoDocumento(TipoDocumento.Mapas);
     }
 
-    public Mapa(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Mapa(Integer idEjemplar, String codigoEjemplar,String titulo, String autor, String ubicacion,
                 Estado estado, String escala, String tipoMapa) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Mapas, estado);
+        super(idEjemplar,  codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Mapas, estado);
         this.escala = escala;
         this.tipoMapa = tipoMapa;
     }

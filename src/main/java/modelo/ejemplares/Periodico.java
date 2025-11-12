@@ -12,9 +12,9 @@ public class Periodico extends Ejemplar {
         setTipoDocumento(TipoDocumento.Periodicos);
     }
 
-    public Periodico(Integer idEjemplar, String titulo, String autor, String ubicacion,
+    public Periodico(Integer idEjemplar, String codigoEjemplar,String titulo, String autor, String ubicacion,
                      Estado estado, LocalDate fechaPublicacion, String tipoPeriodico) {
-        super(idEjemplar, titulo, autor, ubicacion, TipoDocumento.Periodicos, estado);
+        super(idEjemplar,  codigoEjemplar,titulo, autor, ubicacion, TipoDocumento.Periodicos, estado);
         this.fechaPublicacion = fechaPublicacion;
         this.tipoPeriodico = tipoPeriodico;
     }

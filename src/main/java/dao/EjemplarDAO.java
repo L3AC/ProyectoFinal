@@ -3,49 +3,78 @@ package dao;
 import modelo.Ejemplar;
 import util.ConexionBD;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import static modelo.Ejemplar.TipoDocumento.Documento;
-import modelo.ejemplares.CD;
-import modelo.ejemplares.Cassette;
-import modelo.ejemplares.DVD;
-import modelo.ejemplares.Diccionario;
-import modelo.ejemplares.Documento;
-import modelo.ejemplares.Libro;
-import modelo.ejemplares.Mapa;
-import modelo.ejemplares.Periodico;
-import modelo.ejemplares.Revista;
-import modelo.ejemplares.Tesis;
-import modelo.ejemplares.VHS;
+import modelo.ejemplares.*;
 
 public class EjemplarDAO {
 
     private static final Logger logger = LogManager.getLogger(EjemplarDAO.class);
 
+    private String obtenerPrefijo(Ejemplar.TipoDocumento tipo) {
+        return switch (tipo) {
+            case Libro -> "LIB";
+            case Revistas -> "REV";
+            case CD -> "CDA";
+            case DVD -> "DVD";
+            case Diccionario -> "DIC";
+            case Mapas -> "MAP";
+            case Tesis -> "TES";
+            case VHS -> "VHS";
+            case Cassettes -> "CAS";
+            case Documento -> "DOC";
+            case Periodicos -> "PER";
+            default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
+        };
+    }
+
     // === INSERTAR ===
     public boolean agregarEjemplar(Ejemplar ejemplar) {
-        String sqlInsertarGeneral = """
-            INSERT INTO Ejemplares (titulo, autor, ubicacion, tipo_documento, estado)
-            VALUES (?, ?, ?, ?, ?)
+        // 1. Generar el código único
+        String prefijo = obtenerPrefijo(ejemplar.getTipoDocumento());
+        String sqlGenerarCodigo = """
+            SELECT CONCAT(?, '-', LPAD(COALESCE(MAX(CAST(SUBSTRING_INDEX(codigo, '-', -1) AS UNSIGNED)), 0) + 1, 5, '0')) AS nuevo_codigo
+            FROM Ejemplares
+            WHERE tipo_documento = ?
             """;
 
+        String nuevoCodigo = prefijo + "-00001"; // valor por defecto si no hay registros
+
         try (Connection conn = ConexionBD.getConnection()) {
-            conn.setAutoCommit(false); // Para transacciones
+            // Generar código
+            try (PreparedStatement psCodigo = conn.prepareStatement(sqlGenerarCodigo)) {
+                psCodigo.setString(1, prefijo);
+                psCodigo.setString(2, ejemplar.getTipoDocumento().name());
+                try (ResultSet rs = psCodigo.executeQuery()) {
+                    if (rs.next()) {
+                        nuevoCodigo = rs.getString("nuevo_codigo");
+                    }
+                }
+            }
+
+            // Asignar el código al ejemplar
+            ejemplar.setCodigoEjemplar(nuevoCodigo);
+
+            // 2. Insertar en tabla principal
+            String sqlInsertarGeneral = """
+                INSERT INTO Ejemplares (codigo, titulo, autor, ubicacion, tipo_documento, estado)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """;
+
+            conn.setAutoCommit(false);
 
             try (PreparedStatement psGeneral = conn.prepareStatement(sqlInsertarGeneral, Statement.RETURN_GENERATED_KEYS)) {
-                psGeneral.setString(1, ejemplar.getTitulo());
-                psGeneral.setString(2, ejemplar.getAutor());
-                psGeneral.setString(3, ejemplar.getUbicacion());
-                psGeneral.setString(4, ejemplar.getTipoDocumento().name());
-                psGeneral.setString(5, ejemplar.getEstado().name());
+                psGeneral.setString(1, ejemplar.getCodigoEjemplar());
+                psGeneral.setString(2, ejemplar.getTitulo());
+                psGeneral.setString(3, ejemplar.getAutor());
+                psGeneral.setString(4, ejemplar.getUbicacion());
+                psGeneral.setString(5, ejemplar.getTipoDocumento().name());
+                psGeneral.setString(6, ejemplar.getEstado().name());
 
                 int filas = psGeneral.executeUpdate();
                 if (filas == 0) {
@@ -204,38 +233,36 @@ public class EjemplarDAO {
     }
 
     // === LISTAR TODOS ===
-    public List<Ejemplar> listarEjemplares() {
-        List<Ejemplar> lista = new ArrayList<>();
-        String sql = "SELECT id_ejemplar, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares ORDER BY id_ejemplar";
+    public List<Ejemplar> buscarEjemplaresPorTitulo(String titulo) {
+    List<Ejemplar> lista = new ArrayList<>();
+    String sql = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
 
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+    try (Connection conn = ConexionBD.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
+        ps.setString(1, "%" + titulo + "%");
+
+        try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                int id = rs.getInt("id_ejemplar");
-                String titulo = rs.getString("titulo");
-                String autor = rs.getString("autor");
-                String ubicacion = rs.getString("ubicacion");
-                String tipoStr = rs.getString("tipo_documento");
-                String estadoStr = rs.getString("estado");
-
-                Ejemplar.TipoDocumento tipoDoc = Ejemplar.TipoDocumento.valueOf(tipoStr);
-                Ejemplar.Estado estadoEnum = Ejemplar.Estado.valueOf(estadoStr);
-
-                Ejemplar ejemplar = obtenerEjemplarPorTipo(conn, id, titulo, autor, ubicacion, tipoDoc, estadoEnum);
-                if (ejemplar != null) {
-                    lista.add(ejemplar);
-                }
+                Ejemplar e = new Ejemplar();
+                e.setIdEjemplar(rs.getInt("id_ejemplar"));
+                e.setCodigoEjemplar(rs.getString("codigo"));
+                e.setTitulo(rs.getString("titulo"));
+                e.setAutor(rs.getString("autor"));
+                e.setUbicacion(rs.getString("ubicacion"));
+                e.setTipoDocumento(Ejemplar.TipoDocumento.valueOf(rs.getString("tipo_documento")));
+                e.setEstado(Ejemplar.Estado.valueOf(rs.getString("estado")));
+                lista.add(e);
             }
-        } catch (SQLException e) {
-            logger.error("Error al listar ejemplares", e);
         }
-        return lista;
+    } catch (SQLException e) {
+        logger.error("Error al buscar ejemplares", e);
     }
+    return lista;
+}
 
     // === OBTENER UN EJEMPLAR COMPLETO POR TIPO ===
-    private Ejemplar obtenerEjemplarPorTipo(Connection conn, int id, String titulo, String autor, String ubicacion,
+    private Ejemplar obtenerEjemplarPorTipo(Connection conn, int id, String codigo, String titulo, String autor, String ubicacion,
                                             Ejemplar.TipoDocumento tipo, Ejemplar.Estado estado) {
         switch (tipo) {
             case Libro -> {
@@ -246,6 +273,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Libro l = new Libro();
                         l.setIdEjemplar(id);
+                        l.setCodigoEjemplar(codigo);
                         l.setTitulo(titulo);
                         l.setAutor(autor);
                         l.setUbicacion(ubicacion);
@@ -268,6 +296,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Diccionario d = new Diccionario();
                         d.setIdEjemplar(id);
+                        d.setCodigoEjemplar(codigo);
                         d.setTitulo(titulo);
                         d.setAutor(autor);
                         d.setUbicacion(ubicacion);
@@ -289,6 +318,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Mapa m = new Mapa();
                         m.setIdEjemplar(id);
+                        m.setCodigoEjemplar(codigo);
                         m.setTitulo(titulo);
                         m.setAutor(autor);
                         m.setUbicacion(ubicacion);
@@ -310,6 +340,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Tesis t = new Tesis();
                         t.setIdEjemplar(id);
+                        t.setCodigoEjemplar(codigo);
                         t.setTitulo(titulo);
                         t.setAutor(autor);
                         t.setUbicacion(ubicacion);
@@ -331,6 +362,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         DVD d = new DVD();
                         d.setIdEjemplar(id);
+                        d.setCodigoEjemplar(codigo);
                         d.setTitulo(titulo);
                         d.setAutor(autor);
                         d.setUbicacion(ubicacion);
@@ -353,6 +385,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         VHS v = new VHS();
                         v.setIdEjemplar(id);
+                        v.setCodigoEjemplar(codigo);
                         v.setTitulo(titulo);
                         v.setAutor(autor);
                         v.setUbicacion(ubicacion);
@@ -375,6 +408,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Cassette c = new Cassette();
                         c.setIdEjemplar(id);
+                        c.setCodigoEjemplar(codigo);
                         c.setTitulo(titulo);
                         c.setAutor(autor);
                         c.setUbicacion(ubicacion);
@@ -397,6 +431,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         CD cd = new CD();
                         cd.setIdEjemplar(id);
+                        cd.setCodigoEjemplar(codigo);
                         cd.setTitulo(titulo);
                         cd.setAutor(autor);
                         cd.setUbicacion(ubicacion);
@@ -419,6 +454,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Documento doc = new Documento();
                         doc.setIdEjemplar(id);
+                        doc.setCodigoEjemplar(codigo);
                         doc.setTitulo(titulo);
                         doc.setAutor(autor);
                         doc.setUbicacion(ubicacion);
@@ -439,6 +475,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Periodico p = new Periodico();
                         p.setIdEjemplar(id);
+                        p.setCodigoEjemplar(codigo);
                         p.setTitulo(titulo);
                         p.setAutor(autor);
                         p.setUbicacion(ubicacion);
@@ -461,6 +498,7 @@ public class EjemplarDAO {
                     if (rs.next()) {
                         Revista r = new Revista();
                         r.setIdEjemplar(id);
+                        r.setCodigoEjemplar(codigo);
                         r.setTitulo(titulo);
                         r.setAutor(autor);
                         r.setUbicacion(ubicacion);
@@ -529,7 +567,6 @@ public class EjemplarDAO {
                     ps.executeUpdate();
                 }
             }
-            // Puedes agregar los demás casos (Diccionario, DVD, etc.) de forma similar si los necesitas
             default -> {
                 logger.warn("Actualización de detalle no implementada para tipo: " + tipo);
                 return true; // al menos la parte general se actualizó
@@ -546,7 +583,7 @@ public class EjemplarDAO {
             ps.setInt(1, idEjemplar);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("Error al eliminar ejemplar con ID: " + idEjemplar, e);
+            logger.error("Error al desactivar ejemplar con ID: " + idEjemplar, e);
             return false;
         }
     }

@@ -143,14 +143,14 @@ public class Home extends javax.swing.JFrame {
                 .addComponent(lbOpcion4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(28, 28, 28)
                 .addComponent(lbOpcion5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(46, Short.MAX_VALUE))
+                .addContainerGap(56, Short.MAX_VALUE))
         );
 
-        jPanel3.add(menuPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 480));
+        jPanel3.add(menuPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 490));
 
         mainPanel.setBackground(new java.awt.Color(0, 102, 102));
         mainPanel.setLayout(new java.awt.CardLayout());
-        jPanel3.add(mainPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 0, 680, 480));
+        jPanel3.add(mainPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 0, 780, 490));
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
 
