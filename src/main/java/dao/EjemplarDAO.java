@@ -18,18 +18,30 @@ public class EjemplarDAO {
 
     private String obtenerPrefijo(Ejemplar.TipoDocumento tipo) {
         return switch (tipo) {
-            case Libro -> "LIB";
-            case Revistas -> "REV";
-            case CD -> "CDA";
-            case DVD -> "DVD";
-            case Diccionario -> "DIC";
-            case Mapas -> "MAP";
-            case Tesis -> "TES";
-            case VHS -> "VHS";
-            case Cassettes -> "CAS";
-            case Documento -> "DOC";
-            case Periodicos -> "PER";
-            default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
+            case Libro ->
+                "LIB";
+            case Revistas ->
+                "REV";
+            case CD ->
+                "CDA";
+            case DVD ->
+                "DVD";
+            case Diccionario ->
+                "DIC";
+            case Mapas ->
+                "MAP";
+            case Tesis ->
+                "TES";
+            case VHS ->
+                "VHS";
+            case Cassettes ->
+                "CAS";
+            case Documento ->
+                "DOC";
+            case Periodicos ->
+                "PER";
+            default ->
+                throw new IllegalArgumentException("Tipo no soportado: " + tipo);
         };
     }
 
@@ -234,36 +246,64 @@ public class EjemplarDAO {
 
     // === LISTAR TODOS ===
     public List<Ejemplar> buscarEjemplaresPorTitulo(String titulo) {
-    List<Ejemplar> lista = new ArrayList<>();
-    String sql = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
+        List<Ejemplar> lista = new ArrayList<>();
+        String sql = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
 
-    try (Connection conn = ConexionBD.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setString(1, "%" + titulo + "%");
+            ps.setString(1, "%" + titulo + "%");
 
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Ejemplar e = new Ejemplar();
-                e.setIdEjemplar(rs.getInt("id_ejemplar"));
-                e.setCodigoEjemplar(rs.getString("codigo"));
-                e.setTitulo(rs.getString("titulo"));
-                e.setAutor(rs.getString("autor"));
-                e.setUbicacion(rs.getString("ubicacion"));
-                e.setTipoDocumento(Ejemplar.TipoDocumento.valueOf(rs.getString("tipo_documento")));
-                e.setEstado(Ejemplar.Estado.valueOf(rs.getString("estado")));
-                lista.add(e);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Ejemplar e = new Ejemplar();
+                    e.setIdEjemplar(rs.getInt("id_ejemplar"));
+                    e.setCodigoEjemplar(rs.getString("codigo"));
+                    e.setTitulo(rs.getString("titulo"));
+                    e.setAutor(rs.getString("autor"));
+                    e.setUbicacion(rs.getString("ubicacion"));
+                    e.setTipoDocumento(Ejemplar.TipoDocumento.valueOf(rs.getString("tipo_documento")));
+                    e.setEstado(Ejemplar.Estado.valueOf(rs.getString("estado")));
+                    lista.add(e);
+                }
             }
+        } catch (SQLException e) {
+            logger.error("Error al buscar ejemplares", e);
         }
-    } catch (SQLException e) {
-        logger.error("Error al buscar ejemplares", e);
+        return lista;
     }
-    return lista;
-}
+
+    public Ejemplar obtenerEjemplarPorId(int idEjemplar) {
+        String sqlGeneral = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE id_ejemplar = ?";
+
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement psGeneral = conn.prepareStatement(sqlGeneral)) {
+
+            psGeneral.setInt(1, idEjemplar);
+            try (ResultSet rs = psGeneral.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("id_ejemplar");
+                    String codigo = rs.getString("codigo");
+                    String titulo = rs.getString("titulo");
+                    String autor = rs.getString("autor");
+                    String ubicacion = rs.getString("ubicacion");
+                    String tipoStr = rs.getString("tipo_documento");
+                    String estadoStr = rs.getString("estado");
+
+                    Ejemplar.TipoDocumento tipoDoc = Ejemplar.TipoDocumento.valueOf(tipoStr);
+                    Ejemplar.Estado estadoEnum = Ejemplar.Estado.valueOf(estadoStr);
+
+                    // Este método ya carga los datos específicos de la tabla correspondiente
+                    return obtenerEjemplarPorTipo(conn, id, codigo, titulo, autor, ubicacion, tipoDoc, estadoEnum);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error al obtener ejemplar por ID: " + idEjemplar, e);
+        }
+        return null; // Retorna null si no se encuentra
+    }
 
     // === OBTENER UN EJEMPLAR COMPLETO POR TIPO ===
     private Ejemplar obtenerEjemplarPorTipo(Connection conn, int id, String codigo, String titulo, String autor, String ubicacion,
-                                            Ejemplar.TipoDocumento tipo, Ejemplar.Estado estado) {
+            Ejemplar.TipoDocumento tipo, Ejemplar.Estado estado) {
         switch (tipo) {
             case Libro -> {
                 String sql = "SELECT isbn, editorial, edicion FROM Libros WHERE id_ejemplar = ?";
@@ -578,13 +618,22 @@ public class EjemplarDAO {
     // === ELIMINAR ===
     public boolean eliminarEjemplar(int idEjemplar) {
         String sql = "DELETE FROM Ejemplares WHERE id_ejemplar = ?";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, idEjemplar);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             logger.error("Error al desactivar ejemplar con ID: " + idEjemplar, e);
             return false;
+        }
+    }
+    // En EjemplarDAO.java
+
+    public void actualizarEstadoEjemplar(Integer idEjemplar, Ejemplar.Estado nuevoEstado) throws SQLException {
+        String sql = "UPDATE Ejemplares SET estado = ? WHERE id_ejemplar = ?";
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoEstado.name());
+            stmt.setInt(2, idEjemplar);
+            stmt.executeUpdate();
         }
     }
 }

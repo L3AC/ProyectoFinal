@@ -6,6 +6,7 @@ package util;
  
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class ConexionBD {
@@ -23,4 +24,5 @@ public class ConexionBD {
             throw new SQLException("Driver de MySQL no encontrado.", e);
         }
     }
+
 }
