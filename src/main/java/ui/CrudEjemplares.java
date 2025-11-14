@@ -1,9 +1,12 @@
 package ui;
 
 import dao.EjemplarDAO;
+import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import modelo.Ejemplar;
 
 public class CrudEjemplares extends javax.swing.JPanel {
@@ -13,11 +16,18 @@ public class CrudEjemplares extends javax.swing.JPanel {
 
     public CrudEjemplares() {
         initComponents();
+        TableColumnModel tcm = tabla.getColumnModel();
+        TableColumn columna = tcm.getColumn(0);
+        tcm.removeColumn(columna);
+        modelo = (DefaultTableModel) tabla.getModel(); // usa el modelo de la tabla
         buscar("");
+
     }
+
     private void cargarPanel(JPanel panel) {
         mainPanel.removeAll();
-        mainPanel.add(panel);
+        mainPanel.setLayout(new BorderLayout()); // Asegura layout adecuado
+        mainPanel.add(panel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
     }
@@ -29,12 +39,12 @@ public class CrudEjemplares extends javax.swing.JPanel {
         mainPanel = new javax.swing.JPanel();
         Nombre1 = new javax.swing.JLabel();
         btnAgregar = new javax.swing.JButton();
-        btnEditar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tabla = new javax.swing.JTable();
         txtBuscar = new javax.swing.JTextField();
         Nombre = new javax.swing.JLabel();
+        Nombre2 = new javax.swing.JLabel();
 
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -46,13 +56,6 @@ public class CrudEjemplares extends javax.swing.JPanel {
         btnAgregar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAgregarActionPerformed(evt);
-            }
-        });
-
-        btnEditar.setText("Editar");
-        btnEditar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEditarActionPerformed(evt);
             }
         });
 
@@ -100,11 +103,22 @@ public class CrudEjemplares extends javax.swing.JPanel {
         Nombre.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         Nombre.setText("Buscar por título, autor o tipo ejemplar");
 
+        Nombre2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        Nombre2.setText("Doble click en el registro para editar");
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 780, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addContainerGap(537, Short.MAX_VALUE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                        .addComponent(Nombre2)
+                        .addGap(20, 20, 20))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                        .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(155, 155, 155))))
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -118,18 +132,19 @@ public class CrudEjemplares extends javax.swing.JPanel {
                         .addGroup(mainPanelLayout.createSequentialGroup()
                             .addGap(45, 45, 45)
                             .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(174, 174, 174)
-                            .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(36, 36, 36)
-                            .addComponent(btnEditar)
-                            .addGap(26, 26, 26)
+                            .addGap(381, 381, 381)
                             .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 775, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 480, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGap(128, 128, 128)
+                .addComponent(Nombre2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(296, Short.MAX_VALUE))
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -141,8 +156,6 @@ public class CrudEjemplares extends javax.swing.JPanel {
                         .addGroup(mainPanelLayout.createSequentialGroup()
                             .addGap(3, 3, 3)
                             .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(btnAgregar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(18, 18, 18)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -154,12 +167,8 @@ public class CrudEjemplares extends javax.swing.JPanel {
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
         // TODO add your handling code here:
+        cargarPanel(new FormEjemplar("A", null));
     }//GEN-LAST:event_btnAgregarActionPerformed
-
-    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // TODO add your handling code here:
-        cargarPanel(new FormEjemplar("A",null));
-    }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
@@ -170,9 +179,9 @@ public class CrudEjemplares extends javax.swing.JPanel {
 
             int fila = tabla.getSelectedRow();
             if (fila >= 0) {
-                int id = Integer.parseInt((String) modelo.getValueAt(fila, 0));
-                 Ejemplar ejemplar = dao.obtenerEjemplarPorId(id);
-                 cargarPanel(new FormEjemplar("E",ejemplar));//EDITAR REGISTRO
+                int id = (int) modelo.getValueAt(fila, 0);
+                Ejemplar ejemplar = dao.obtenerEjemplarPorId(id);
+                cargarPanel(new FormEjemplar("E", ejemplar));//EDITAR REGISTRO
             }
         }
     }//GEN-LAST:event_tablaMouseClicked
@@ -201,8 +210,8 @@ public class CrudEjemplares extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Nombre;
     private javax.swing.JLabel Nombre1;
+    private javax.swing.JLabel Nombre2;
     private javax.swing.JButton btnAgregar;
-    private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;

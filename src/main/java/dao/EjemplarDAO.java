@@ -50,7 +50,7 @@ public class EjemplarDAO {
         // 1. Generar el código único
         String prefijo = obtenerPrefijo(ejemplar.getTipoDocumento());
         String sqlGenerarCodigo = """
-            SELECT CONCAT(?, '-', LPAD(COALESCE(MAX(CAST(SUBSTRING_INDEX(codigo, '-', -1) AS UNSIGNED)), 0) + 1, 5, '0')) AS nuevo_codigo
+            SELECT CONCAT(?, '-', LPAD(COALESCE(MAX(CAST(SUBSTRING_INDEX(codigo_ejemplar, '-', -1) AS UNSIGNED)), 0) + 1, 5, '0')) AS nuevo_codigo
             FROM Ejemplares
             WHERE tipo_documento = ?
             """;
@@ -74,7 +74,7 @@ public class EjemplarDAO {
 
             // 2. Insertar en tabla principal
             String sqlInsertarGeneral = """
-                INSERT INTO Ejemplares (codigo, titulo, autor, ubicacion, tipo_documento, estado)
+                INSERT INTO Ejemplares (codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
@@ -243,11 +243,168 @@ public class EjemplarDAO {
         }
         return true;
     }
+    // === ACTUALIZAR (OPCIONAL, PERO ÚTIL) ===
+
+    public boolean actualizarEjemplar(Ejemplar ejemplar) {
+        String sqlGeneral = """
+            UPDATE Ejemplares
+            SET titulo = ?, autor = ?, ubicacion = ?, estado = ?
+            WHERE id_ejemplar = ?
+            """;
+
+        try (Connection conn = ConexionBD.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement psGen = conn.prepareStatement(sqlGeneral)) {
+                psGen.setString(1, ejemplar.getTitulo());
+                psGen.setString(2, ejemplar.getAutor());
+                psGen.setString(3, ejemplar.getUbicacion());
+                psGen.setString(4, ejemplar.getEstado().name());
+                psGen.setInt(5, ejemplar.getIdEjemplar());
+                psGen.executeUpdate();
+
+                boolean ok = actualizarDetalleEjemplar(ejemplar, conn);
+                if (!ok) {
+                    conn.rollback();
+                    return false;
+                }
+
+                conn.commit();
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.error("Error al actualizar ejemplar ID: " + ejemplar.getIdEjemplar(), e);
+            return false;
+        }
+    }
+
+    private boolean actualizarDetalleEjemplar(Ejemplar ejemplar, Connection conn) throws SQLException {
+        String tipo = ejemplar.getTipoDocumento().name();
+        int id = ejemplar.getIdEjemplar();
+
+        switch (tipo) {
+            case "Libro" -> {
+                Libro l = (Libro) ejemplar;
+                String sql = "UPDATE Libros SET isbn = ?, editorial = ?, edicion = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, l.getIsbn());
+                    ps.setString(2, l.getEditorial());
+                    ps.setObject(3, l.getEdicion()); // permite null
+                    ps.setInt(4, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Diccionario" -> {
+                Diccionario d = (Diccionario) ejemplar;
+                String sql = "UPDATE Diccionarios SET idioma = ?, volumen = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, d.getIdioma());
+                    ps.setObject(2, d.getVolumen()); // permite null
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Mapas" -> {
+                Mapa m = (Mapa) ejemplar;
+                String sql = "UPDATE Mapas SET escala = ?, tipo_mapa = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, m.getEscala());
+                    ps.setString(2, m.getTipoMapa());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Tesis" -> {
+                Tesis t = (Tesis) ejemplar;
+                String sql = "UPDATE Tesis SET grado_academico = ?, facultad = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, t.getGradoAcademico());
+                    ps.setString(2, t.getFacultad());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "DVD" -> {
+                DVD d = (DVD) ejemplar;
+                String sql = "UPDATE DVDs SET duracion = ?, genero = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setTime(1, d.getDuracion() != null ? Time.valueOf(d.getDuracion()) : null);
+                    ps.setString(2, d.getGenero());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "VHS" -> {
+                VHS v = (VHS) ejemplar;
+                String sql = "UPDATE VHS SET duracion = ?, genero = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setTime(1, v.getDuracion() != null ? Time.valueOf(v.getDuracion()) : null);
+                    ps.setString(2, v.getGenero());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Cassettes" -> {
+                Cassette c = (Cassette) ejemplar;
+                String sql = "UPDATE Cassettes SET duracion = ?, tipo_cinta = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setTime(1, c.getDuracion() != null ? Time.valueOf(c.getDuracion()) : null);
+                    ps.setString(2, c.getTipoCinta());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "CD" -> {
+                CD cd = (CD) ejemplar;
+                String sql = "UPDATE CDs SET duracion = ?, genero = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setTime(1, cd.getDuracion() != null ? Time.valueOf(cd.getDuracion()) : null);
+                    ps.setString(2, cd.getGenero());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Documento" -> {
+                Documento doc = (Documento) ejemplar;
+                String sql = "UPDATE Documentos SET tipo_documento_detalle = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, doc.getTipoDocumentoDetalle());
+                    ps.setInt(2, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Periodicos" -> {
+                Periodico p = (Periodico) ejemplar;
+                String sql = "UPDATE Periodicos SET fecha_publicacion = ?, tipo_periodico = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setDate(1, p.getFechaPublicacion() != null ? Date.valueOf(p.getFechaPublicacion()) : null);
+                    ps.setString(2, p.getTipoPeriodico());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            case "Revistas" -> {
+                Revista r = (Revista) ejemplar;
+                String sql = "UPDATE Revistas SET fecha_publicacion = ?, tipo_revista = ? WHERE id_ejemplar = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setDate(1, r.getFechaPublicacion() != null ? Date.valueOf(r.getFechaPublicacion()) : null);
+                    ps.setString(2, r.getTipoRevista());
+                    ps.setInt(3, id);
+                    ps.executeUpdate();
+                }
+            }
+            default -> {
+                logger.warn("Tipo de documento no soportado para actualización de detalle: " + tipo);
+                return false; // o true, dependiendo de si consideras que es un error o no.
+            }
+        }
+        return true;
+    }
 
     // === LISTAR TODOS ===
     public List<Ejemplar> buscarEjemplaresPorTitulo(String titulo) {
         List<Ejemplar> lista = new ArrayList<>();
-        String sql = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
+        String sql = "SELECT id_ejemplar, codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
 
         try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -257,7 +414,7 @@ public class EjemplarDAO {
                 while (rs.next()) {
                     Ejemplar e = new Ejemplar();
                     e.setIdEjemplar(rs.getInt("id_ejemplar"));
-                    e.setCodigoEjemplar(rs.getString("codigo"));
+                    e.setCodigoEjemplar(rs.getString("codigo_ejemplar"));
                     e.setTitulo(rs.getString("titulo"));
                     e.setAutor(rs.getString("autor"));
                     e.setUbicacion(rs.getString("ubicacion"));
@@ -273,7 +430,7 @@ public class EjemplarDAO {
     }
 
     public Ejemplar obtenerEjemplarPorId(int idEjemplar) {
-        String sqlGeneral = "SELECT id_ejemplar, codigo, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE id_ejemplar = ?";
+        String sqlGeneral = "SELECT id_ejemplar, codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE id_ejemplar = ?";
 
         try (Connection conn = ConexionBD.getConnection(); PreparedStatement psGeneral = conn.prepareStatement(sqlGeneral)) {
 
@@ -281,7 +438,7 @@ public class EjemplarDAO {
             try (ResultSet rs = psGeneral.executeQuery()) {
                 if (rs.next()) {
                     int id = rs.getInt("id_ejemplar");
-                    String codigo = rs.getString("codigo");
+                    String codigo = rs.getString("codigo_ejemplar");
                     String titulo = rs.getString("titulo");
                     String autor = rs.getString("autor");
                     String ubicacion = rs.getString("ubicacion");
@@ -555,64 +712,6 @@ public class EjemplarDAO {
             }
         }
         return null;
-    }
-
-    // === ACTUALIZAR (OPCIONAL, PERO ÚTIL) ===
-    public boolean actualizarEjemplar(Ejemplar ejemplar) {
-        String sqlGeneral = """
-            UPDATE Ejemplares
-            SET titulo = ?, autor = ?, ubicacion = ?, estado = ?
-            WHERE id_ejemplar = ?
-            """;
-
-        try (Connection conn = ConexionBD.getConnection()) {
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement psGen = conn.prepareStatement(sqlGeneral)) {
-                psGen.setString(1, ejemplar.getTitulo());
-                psGen.setString(2, ejemplar.getAutor());
-                psGen.setString(3, ejemplar.getUbicacion());
-                psGen.setString(4, ejemplar.getEstado().name());
-                psGen.setInt(5, ejemplar.getIdEjemplar());
-                psGen.executeUpdate();
-
-                boolean ok = actualizarDetalleEjemplar(ejemplar, conn);
-                if (!ok) {
-                    conn.rollback();
-                    return false;
-                }
-
-                conn.commit();
-                return true;
-            }
-        } catch (SQLException e) {
-            logger.error("Error al actualizar ejemplar ID: " + ejemplar.getIdEjemplar(), e);
-            return false;
-        }
-    }
-
-    private boolean actualizarDetalleEjemplar(Ejemplar ejemplar, Connection conn) throws SQLException {
-        String tipo = ejemplar.getTipoDocumento().name();
-        int id = ejemplar.getIdEjemplar();
-
-        switch (tipo) {
-            case "Libro" -> {
-                Libro l = (Libro) ejemplar;
-                String sql = "UPDATE Libros SET isbn = ?, editorial = ?, edicion = ? WHERE id_ejemplar = ?";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setString(1, l.getIsbn());
-                    ps.setString(2, l.getEditorial());
-                    ps.setObject(3, l.getEdicion());
-                    ps.setInt(4, id);
-                    ps.executeUpdate();
-                }
-            }
-            default -> {
-                logger.warn("Actualización de detalle no implementada para tipo: " + tipo);
-                return true; // al menos la parte general se actualizó
-            }
-        }
-        return true;
     }
 
     // === ELIMINAR ===
