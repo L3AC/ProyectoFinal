@@ -12,6 +12,8 @@ import javax.swing.JPanel;
 import modelo.Rol;
 import modelo.Usuario;
 import util.Validacion;
+import javax.swing.ImageIcon;
+import java.awt.Image;
 
 public class FormUsuario extends javax.swing.JPanel {
     
@@ -34,6 +36,25 @@ public class FormUsuario extends javax.swing.JPanel {
         this.usuarioActual = usuario;
         this.panelCrudUsuarios = panelCrudUsuarios;
 
+
+        try {
+            URL urlFlecha = getClass().getResource("/img/flecha.png");
+            if (urlFlecha != null) {
+                ImageIcon rawIcon = new ImageIcon(urlFlecha);
+                Image esc = rawIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                btnVolver.setIcon(new ImageIcon(esc));
+                btnVolver.setText("");
+                btnVolver.setBorderPainted(false);
+                btnVolver.setContentAreaFilled(false);
+                btnVolver.setFocusPainted(false);
+                btnVolver.setToolTipText("Regresar");
+            } else {
+                System.err.println("No se encontró la imagen /img/flecha.png en el classpath.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         cargarRolesEnComboBox();
 
         // Aplicar validaciones
@@ -54,13 +75,8 @@ public class FormUsuario extends javax.swing.JPanel {
             txtNombre.setText(usuario.getNombre());
             txtApellido.setText(usuario.getApellido());
             txtCorreo.setText(usuario.getCorreo());
-
-            // Seleccionar el Rol en el ComboBox
             seleccionarRolEnComboBox(usuario.getRol().getIdRol());
-
-            // En modo EDICIÓN, no permitimos cambiar rol ni contraseña (basado en UsuarioDAO.actualizarUsuario)
-            lbContra.setVisible(false);
-            txtContra.setVisible(false);
+            txtContra.setText("");
             lbRol.setVisible(false); // Opcional: podrías permitirlo si modificas el DAO
             cbRol.setVisible(false); // Opcional:
 
@@ -146,6 +162,14 @@ public class FormUsuario extends javax.swing.JPanel {
         if (!txtCorreo.getText().trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
             JOptionPane.showMessageDialog(this, "El formato del correo no es válido.", "Error de validación", JOptionPane.WARNING_MESSAGE);
             return false;
+        }
+
+        if ("E".equals(accion)) {
+            String pass = new String(txtContra.getPassword()).trim();
+            if (!pass.isEmpty() && pass.length() < 4) {
+                JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos 4 caracteres.", "Error de validación", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
         }
 
         // Validación solo para modo AGREGAR
@@ -265,8 +289,11 @@ public class FormUsuario extends javax.swing.JPanel {
                 usuarioActual.setNombre(txtNombre.getText().trim());
                 usuarioActual.setApellido(txtApellido.getText().trim());
                 usuarioActual.setCorreo(txtCorreo.getText().trim());
-
-                boolean actualizado = usuarioDAO.actualizarUsuario(usuarioActual);
+                String nuevaContra = new String(txtContra.getPassword()).trim();
+                if (nuevaContra.isEmpty()) {
+                    nuevaContra = null;
+                }
+                boolean actualizado = usuarioDAO.actualizarUsuario(usuarioActual, nuevaContra);
 
                 if (actualizado) {
                     JOptionPane.showMessageDialog(this, "Usuario actualizado exitosamente.");

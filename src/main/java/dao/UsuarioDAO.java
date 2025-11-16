@@ -201,14 +201,17 @@ public class UsuarioDAO {
     }
 
     // === ACTUALIZAR USUARIO ===
-    public boolean actualizarUsuario(Usuario usuario) {
-        String sql = """
-            UPDATE Usuarios
-            SET nombre = ?, apellido = ?, correo = ?
-            WHERE id_usuario = ?
-            """;
+    public boolean actualizarUsuario(Usuario usuario, String nuevaContrasena) {
+        StringBuilder sql = new StringBuilder("""
+        UPDATE Usuarios
+        SET nombre = ?, apellido = ?, correo = ?
+        """);
+        boolean actualizarPassword = nuevaContrasena != null && !nuevaContrasena.isBlank();
+        if (actualizarPassword) {
+            sql.append(", contrasena = ?");
+        }
+        sql.append(" WHERE id_usuario = ?");
 
-        // Validar unicidad de correo
         if (existeCorreo(usuario.getCorreo())) {
             Usuario existente = obtenerPorCorreo(usuario.getCorreo());
             if (existente != null && !existente.getIdUsuario().equals(usuario.getIdUsuario())) {
@@ -218,13 +221,19 @@ public class UsuarioDAO {
         }
 
         try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            ps.setString(1, usuario.getNombre());
-            ps.setString(2, usuario.getApellido());
-            ps.setString(3, usuario.getCorreo());
-            ps.setInt(4, usuario.getIdUsuario());
+            int idx = 1;
+            ps.setString(idx++, usuario.getNombre());
+            ps.setString(idx++, usuario.getApellido());
+            ps.setString(idx++, usuario.getCorreo());
 
+            if (actualizarPassword) {
+                String hash = BCrypt.hashpw(nuevaContrasena, BCrypt.gensalt());
+                ps.setString(idx++, hash);
+            }
+
+            ps.setInt(idx, usuario.getIdUsuario());
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
