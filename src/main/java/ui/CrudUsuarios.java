@@ -1,16 +1,102 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package ui;
 
+import dao.UsuarioDAO;
+import java.awt.BorderLayout;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import modelo.Usuario;
+
 public class CrudUsuarios extends javax.swing.JPanel {
+
+    private UsuarioDAO dao = new UsuarioDAO();
+    private DefaultTableModel modelo;
+    private List<Usuario> listaCompletaUsuarios; // Caché para filtrar
 
     /**
      * Creates new form CrudUsuarios
      */
     public CrudUsuarios() {
         initComponents();
+
+        // Configurar la tabla
+        modelo = (DefaultTableModel) tabla.getModel();
+
+        // Ocultar la columna ID (columna 0)
+        TableColumnModel tcm = tabla.getColumnModel();
+        TableColumn columna = tcm.getColumn(0);
+        tcm.removeColumn(columna);
+
+        // Cargar datos iniciales
+        cargarDatosCompletos();
+        filtrarDatos();
+    }
+
+    /**
+     * Carga o recarga la lista completa de usuarios desde la BD.
+     */
+    public void cargarDatosCompletos() {
+        // Carga la lista completa desde la BD
+        listaCompletaUsuarios = dao.listarUsuarios();
+    }
+
+    /**
+     * Filtra la lista en caché (listaCompletaUsuarios) según el texto de búsqueda
+     * y actualiza la tabla.
+     */
+    public void filtrarDatos() {
+        modelo.setRowCount(0); // Limpiar tabla
+        String filtro = txtBuscar.getText().trim().toLowerCase();
+
+        // Filtra la lista en memoria
+        List<Usuario> listaFiltrada;
+        if (filtro.isEmpty()) {
+            listaFiltrada = listaCompletaUsuarios;
+        } else {
+            listaFiltrada = listaCompletaUsuarios.stream()
+                    .filter(u -> u.getNombre().toLowerCase().contains(filtro) ||
+                            u.getApellido().toLowerCase().contains(filtro) ||
+                            u.getCorreo().toLowerCase().contains(filtro) ||
+                            u.getRol().getNombreRol().toLowerCase().contains(filtro))
+                    .collect(Collectors.toList());
+        }
+
+        // Llena el modelo de la tabla
+        for (Usuario u : listaFiltrada) {
+            modelo.addRow(new Object[]{
+                    u.getIdUsuario(),
+                    u.getNombre(),
+                    u.getApellido(),
+                    u.getCorreo(),
+                    u.getRol().getNombreRol() // Muestra el nombre del rol
+            });
+        }
+    }
+
+    /**
+     * Carga un nuevo JPanel en el contenedor principal.
+     */
+    private void cargarPanel(JPanel panel) {
+        // Asumimos que este panel está contenido en un panel llamado "mainPanel"
+        // o que este mismo es el panel que debe ser reemplazado.
+        // Por la estructura de Home.java, este panel (CrudUsuarios) está DENTRO de mainPanel.
+        // Necesitamos reemplazar CrudUsuarios por FormUsuario en el 'mainPanel' de la clase Home.
+        // La forma más limpia es buscar el contenedor padre.
+
+        // Este código asume que el 'mainPanel' de 'Home' es el padre de 'CrudUsuarios'
+        // Si CrudUsuarios está dentro de otro panel (como en CrudEjemplares),
+        // necesitas referenciar a ese panel.
+
+        JPanel contenedor = (JPanel) this.getParent(); // Obtiene el 'mainPanel' de Home
+        contenedor.removeAll();
+        contenedor.setLayout(new BorderLayout()); // Asegura layout adecuado
+        contenedor.add(panel, BorderLayout.CENTER);
+        contenedor.revalidate();
+        contenedor.repaint();
     }
 
     /**
@@ -22,19 +108,148 @@ public class CrudUsuarios extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 680, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 540, Short.MAX_VALUE)
-        );
+        Nombre1 = new javax.swing.JLabel();
+        Nombre = new javax.swing.JLabel();
+        txtBuscar = new javax.swing.JTextField();
+        btnAgregar = new javax.swing.JButton();
+        btnEliminar = new javax.swing.JButton();
+        Nombre2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tabla = new javax.swing.JTable();
+
+        setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        Nombre1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        Nombre1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Nombre1.setText("Gestión de Usuarios");
+        add(Nombre1, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 20, 224, 60));
+
+        Nombre.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        Nombre.setText("Buscar por nombre, apellido, correo o rol");
+        add(Nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 130, 280, -1));
+
+        txtBuscar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtBuscarKeyReleased(evt);
+            }
+        });
+        add(txtBuscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 280, -1));
+
+        btnAgregar.setText("Agregar");
+        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarActionPerformed(evt);
+            }
+        });
+        add(btnAgregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 160, 80, 30));
+
+        btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
+        add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 160, 80, 30));
+
+        Nombre2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        Nombre2.setText("Doble click en el registro para editar");
+        add(Nombre2, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 130, -1, -1));
+
+        tabla.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+
+                },
+                new String [] {
+                        "ID", "Nombre", "Apellido", "Correo", "Rol"
+                }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                    false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tabla.setColumnSelectionAllowed(true);
+        tabla.setRowHeight(40);
+        tabla.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tablaMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tabla);
+        tabla.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+
+        add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 210, 690, 310));
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
+        // Carga el formulario en modo "Agregar"
+        cargarPanel(new FormUsuario("A", null, this));
+    }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un usuario para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idUsuario = (int) modelo.getValueAt(fila, 0);
+
+        // Evitar que el admin se elimine a sí mismo (asumiendo ID 1 para admin, o puedes chequear correo)
+        if (idUsuario == 1) { // O compara con el ID del usuario logueado
+            JOptionPane.showMessageDialog(this, "No puede eliminar al administrador principal.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar a este usuario?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean eliminado = dao.eliminarUsuario(idUsuario);
+            if (eliminado) {
+                JOptionPane.showMessageDialog(this, "Usuario eliminado exitosamente.");
+                cargarDatosCompletos(); // Recarga desde la B
+                filtrarDatos();        // Actualiza la tabla
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el usuario. Es posible que tenga préstamos o reservas activas.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void tablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaMouseClicked
+        // Doble click para editar
+        if (evt.getClickCount() == 2) {
+            int fila = tabla.getSelectedRow();
+            if (fila >= 0) {
+                int idUsuario = (int) modelo.getValueAt(fila, 0);
+                // Obtenemos el objeto completo desde el DAO
+                Usuario usuarioAEditar = dao.obtenerPorId(idUsuario);
+                if (usuarioAEditar != null) {
+                    // Carga el formulario en modo "Editar"
+                    cargarPanel(new FormUsuario("E", usuarioAEditar, this));
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo encontrar el usuario seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }//GEN-LAST:event_tablaMouseClicked
+
+    private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
+        // Llama al método de filtrado cada vez que se suelta una tecla
+        filtrarDatos();
+    }//GEN-LAST:event_txtBuscarKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel Nombre;
+    private javax.swing.JLabel Nombre1;
+    private javax.swing.JLabel Nombre2;
+    private javax.swing.JButton btnAgregar;
+    private javax.swing.JButton btnEliminar;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tabla;
+    private javax.swing.JTextField txtBuscar;
     // End of variables declaration//GEN-END:variables
 }
