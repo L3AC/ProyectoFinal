@@ -3,7 +3,6 @@ package ui;
 import dao.RolDAO;
 import dao.UsuarioDAO;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.net.URL;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
