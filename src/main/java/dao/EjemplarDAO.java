@@ -50,12 +50,11 @@ public class EjemplarDAO {
         // 1. Generar el código único
         String prefijo = obtenerPrefijo(ejemplar.getTipoDocumento());
         String sqlGenerarCodigo = """
-            SELECT CONCAT(?, '-', LPAD(COALESCE(MAX(CAST(SUBSTRING_INDEX(codigo_ejemplar, '-', -1) AS UNSIGNED)), 0) + 1, 5, '0')) AS nuevo_codigo
-            FROM Ejemplares
-            WHERE tipo_documento = ?
+            SELECT CONCAT(?,LPAD(COALESCE(MAX(CAST(SUBSTRING(codigo_ejemplar, 4) AS UNSIGNED)), 0) + 1,5,'0')) AS nuevo_codigo
+            FROM Ejemplares WHERE tipo_documento = ?
             """;
 
-        String nuevoCodigo = prefijo + "-00001"; // valor por defecto si no hay registros
+        String nuevoCodigo = prefijo + "00001"; // valor por defecto si no hay registros
 
         try (Connection conn = ConexionBD.getConnection()) {
             // Generar código
@@ -404,7 +403,8 @@ public class EjemplarDAO {
     // === LISTAR TODOS ===
     public List<Ejemplar> buscarEjemplaresPorTitulo(String titulo) {
         List<Ejemplar> lista = new ArrayList<>();
-        String sql = "SELECT id_ejemplar, codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado FROM Ejemplares WHERE titulo LIKE ?";
+        String sql = "SELECT id_ejemplar, codigo_ejemplar, titulo, autor, ubicacion, tipo_documento, estado "
+                + "FROM Ejemplares WHERE titulo LIKE ? ORDER BY tipo_documento";
 
         try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 

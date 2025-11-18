@@ -10,12 +10,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
+import javax.swing.text.PlainDocument;
 import modelo.Ejemplar;
 import modelo.ejemplares.CD;
 import modelo.ejemplares.Cassette;
@@ -49,11 +52,13 @@ public class FormEjemplar extends javax.swing.JPanel {
         this.accion = accion;
         if ("E".equals(accion)) {
             lbTitulo.setText("Editar ejemplar");
+            cbTD.setSelectedItem(ejemplar.getTipoDocumento());
             cbTD.setEnabled(false);
             this.ejemplarActual = ejemplar;
             cargarDatosEnFormulario(ejemplar);
         } else {
             lbTitulo.setText("Agregar ejemplar");
+            cbTD.setSelectedItem("Libro");
             cbTD.setEnabled(true);
             txtCodigo.setVisible(false);
             lbE.setVisible(false);
@@ -187,120 +192,121 @@ public class FormEjemplar extends javax.swing.JPanel {
     private void cbTDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTDActionPerformed
 
         try {
-            //listas para cambiar la visibilidad de elementos
             List<JComponent> listaUno = Arrays.asList(lbC3, txtC3, lbC4, txtFecha);
             List<JComponent> listaDos = Arrays.asList(lbC4, txtFecha);
             List<JComponent> listaTres = Arrays.asList(lbC2, txtC2, txtC3, lbC3, txtC3, lbC4, txtFecha);
             List<JComponent> listaCuatro = Arrays.asList(lbC2, txtC2, lbC3, txtC3);
             List<JComponent> listaCinco = Arrays.asList(lbC1, txtC1, lbC2, txtC2, lbC3, txtC3, lbC4, txtFecha);
-            MaskFormatter timeMask = new MaskFormatter("##:##:##");
-            timeMask.setPlaceholderCharacter('0');
-            txtC2.setFormatterFactory(null);
-            // TODO add your handling code here:
+
+            // Limpiar antes de aplicar nuevas configuraciones
+            quitarMascara(txtC2);
+            txtC1.setDocument(new PlainDocument());
+            txtC2.setDocument(new PlainDocument());
+            txtC3.setDocument(new PlainDocument());
+
             String seleccion = (String) cbTD.getSelectedItem();
             setVisible(true, listaCinco);
+
             switch (seleccion) {
+
                 case "Libro":
                     lbC1.setText("ISBN");
                     lbC2.setText("Editorial");
-                    lbC3.setText("Edicion");
+                    lbC3.setText("Edición");
 
                     Validacion.permitirSolo(txtC1, "^[0-9-]*$", 17);
                     Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9.,:;()&'’\"°\\-/ ]*$", 100);
                     Validacion.permitirSolo(txtC3, "^[0-9]*$", 3);
 
-                    setVisible(false, listaDos);//LLAMA AL METODO PARA OCULTAR ELEMENTOS
+                    setVisible(false, listaDos);
                     break;
+
                 case "Diccionario":
                     lbC1.setText("Idioma");
                     lbC2.setText("Volumen");
 
-                    Validacion.permitirSolo(txtC1, "^[0-9-]*$", 17);
-                    Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9.,:;()&'’\"°\\-/ ]*$", 100);
+                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 50);
+                    Validacion.permitirSolo(txtC2, "^[0-9]*$", 3);
+
                     setVisible(false, listaUno);
                     break;
+
                 case "Mapas":
                     lbC1.setText("Escala");
                     lbC2.setText("Tipo mapa");
 
-                    Validacion.permitirSolo(txtC1, "^[0-9-]*$", 17);
-                    Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9.,:;()&'’\"°\\-/ ]*$", 100);
+                    Validacion.permitirSolo(txtC1, "^[0-9/: –]*$", 20);
+                    Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
+
                     setVisible(false, listaUno);
                     break;
+
                 case "Tesis":
                     lbC1.setText("Grado Académico");
                     lbC2.setText("Facultad");
 
-                    Validacion.permitirSolo(txtC1, "^[0-9-]*$", 17);
-                    Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9.,:;()&'’\"°\\-/ ]*$", 100);
+                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
+                    Validacion.permitirSolo(txtC2, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
+
                     setVisible(false, listaUno);
                     break;
+
                 case "DVD":
-                    lbC1.setText("Género");
-                    lbC2.setText("Duración");
-
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
-                    //PONER MASCARA AL JFormmated
-
-                    txtC2.setFormatterFactory(new DefaultFormatterFactory(timeMask));
-                    Validacion.permitirSolo(txtC2, "^[0-9:]*$", 8);
-                    setVisible(false, listaUno);
-                    break;
                 case "VHS":
-                    lbC1.setText("Género");
-                    lbC2.setText("Duración");
-
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
-                    //PONER MASCARA AL JFormmated
-                    txtC2.setFormatterFactory(new DefaultFormatterFactory(timeMask));
-                    Validacion.permitirSolo(txtC2, "^[0-9:]*$", 8);
-                    setVisible(false, listaUno);
-                    break;
                 case "Cassettes":
-                    lbC1.setText("Tipo cinta");
-                    lbC2.setText("Duración");
-
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
-                    //PONER MASCARA AL JFormmated
-                    txtC2.setFormatterFactory(new DefaultFormatterFactory(timeMask));
-                    Validacion.permitirSolo(txtC2, "^[0-9:]*$", 8);
-                    setVisible(false, listaUno);
-                    break;
                 case "CD":
-                    lbC1.setText("Tipo cinta");
+                    lbC1.setText(seleccion.equals("Cassettes") ? "Tipo cinta" : "Género");
                     lbC2.setText("Duración");
 
+                    // VALIDACIÓN TEXTO
                     Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
-                    //PONER MASCARA AL JFormmated
-                    txtC2.setFormatterFactory(new DefaultFormatterFactory(timeMask));
-                    Validacion.permitirSolo(txtC2, "^[0-9:]*$", 8);
+
+                    // MASCARA SIN DOCUMENTFILTER EXTRA
+                    aplicarMascaraTiempo(txtC2);
                     setVisible(false, listaUno);
                     break;
                 case "Documento":
                     lbC1.setText("Tipo de documento");
 
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
+                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
+
                     setVisible(false, listaTres);
                     break;
                 case "Periodicos":
-                    lbC1.setText("Tipo periodico");
+                    lbC1.setText("Tipo periódico");
 
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
+                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
                     setVisible(false, listaCuatro);
                     break;
+
+                // -------------------- REVISTA --------------------
                 case "Revistas":
                     lbC1.setText("Tipo revista");
-                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ, ]*$", 100);
+
+                    Validacion.permitirSolo(txtC1, "^[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$", 100);
+
                     setVisible(false, listaCuatro);
                     break;
-                default:
 
+                default:
                     break;
             }
         } catch (ParseException ex) {
             System.getLogger(FormEjemplar.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }//GEN-LAST:event_cbTDActionPerformed
+    private void aplicarMascaraTiempo(JFormattedTextField campo) throws ParseException {
+        MaskFormatter mf = new MaskFormatter("##:##:##");
+        mf.setPlaceholderCharacter('0');
+        campo.setFormatterFactory(new DefaultFormatterFactory(mf));
+    }
+
+    private void quitarMascara(JFormattedTextField campo) {
+        campo.setValue(null);
+        campo.setFormatterFactory(null);
+        campo.setFocusLostBehavior(JFormattedTextField.COMMIT);
+    }
+
     public static void setVisible(boolean visible, List<JComponent> componentes) {
         for (JComponent c : componentes) {
             c.setVisible(visible);
@@ -714,6 +720,11 @@ public class FormEjemplar extends javax.swing.JPanel {
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void cargarDatosEnFormulario(Ejemplar e) {
+        List<JComponent> listaUno = Arrays.asList(lbC3, txtC3, lbC4, txtFecha);
+        List<JComponent> listaDos = Arrays.asList(lbC4, txtFecha);
+        List<JComponent> listaTres = Arrays.asList(lbC2, txtC2, txtC3, lbC3, txtC3, lbC4, txtFecha);
+        List<JComponent> listaCuatro = Arrays.asList(lbC2, txtC2, lbC3, txtC3);
+        List<JComponent> listaCinco = Arrays.asList(lbC1, txtC1, lbC2, txtC2, lbC3, txtC3, lbC4, txtFecha);
         // Llenar los campos comunes
         txtId.setText(String.valueOf(e.getIdEjemplar()));
         txtCodigo.setText(e.getCodigoEjemplar());
@@ -726,48 +737,89 @@ public class FormEjemplar extends javax.swing.JPanel {
         // Ahora, según el tipo, llenar los campos específicos
         if (e instanceof Libro) {
             Libro l = (Libro) e;
+            lbC1.setText("ISBN");
+            lbC2.setText("Editorial");
+            lbC3.setText("Edicion");
             txtC1.setText(l.getIsbn());
             txtC2.setText(l.getEditorial());
             txtC3.setText(l.getEdicion() != null ? l.getEdicion().toString() : "");
+            setVisible(false, listaDos);
         } else if (e instanceof Diccionario) {
+            lbC1.setText("Idioma");
+            lbC2.setText("Volumen");
             Diccionario d = (Diccionario) e;
             txtC1.setText(d.getIdioma());
             txtC2.setText(d.getVolumen() != null ? d.getVolumen().toString() : "");
+
+            setVisible(false, listaUno);
         } else if (e instanceof Mapa) {
+            lbC1.setText("ISBN");
+            lbC2.setText("Editorial");
+            lbC3.setText("Edicion");
             Mapa m = (Mapa) e;
             txtC1.setText(m.getEscala());
             txtC2.setText(m.getTipoMapa());
+
+            setVisible(false, listaUno);
         } else if (e instanceof Tesis) {
+            lbC1.setText("Grado académico");
+            lbC2.setText("Facultad");
             Tesis t = (Tesis) e;
             txtC1.setText(t.getGradoAcademico());
             txtC2.setText(t.getFacultad());
+
+            setVisible(false, listaUno);
         } else if (e instanceof DVD) {
+            lbC1.setText("Género");
+            lbC2.setText("Duración");
             DVD d = (DVD) e;
-            txtC1.setText(d.getDuracion() != null ? d.getDuracion().toString() : "");
-            txtC2.setText(d.getGenero());
+            txtC2.setText(d.getDuracion() != null ? d.getDuracion().toString() : "");
+            txtC1.setText(d.getGenero());
+
+            setVisible(false, listaUno);
         } else if (e instanceof VHS) {
+            lbC1.setText("Género");
+            lbC2.setText("Duración");
             VHS v = (VHS) e;
-            txtC1.setText(v.getDuracion() != null ? v.getDuracion().toString() : "");
-            txtC2.setText(v.getGenero());
+            txtC2.setText(v.getDuracion() != null ? v.getDuracion().toString() : "");
+            txtC1.setText(v.getGenero());
+            setVisible(false, listaUno);
         } else if (e instanceof Cassette) {
+            lbC2.setText("Duración");
+            lbC1.setText("Tipo de cinta");
             Cassette c = (Cassette) e;
-            txtC1.setText(c.getDuracion() != null ? c.getDuracion().toString() : "");
-            txtC2.setText(c.getTipoCinta());
+            txtC2.setText(c.getDuracion() != null ? c.getDuracion().toString() : "");
+            txtC1.setText(c.getTipoCinta());
+            setVisible(false, listaUno);
         } else if (e instanceof CD) {
+            lbC1.setText("Género");
+            lbC2.setText("Duración");
             CD cd = (CD) e;
-            txtC1.setText(cd.getDuracion() != null ? cd.getDuracion().toString() : "");
-            txtC2.setText(cd.getGenero());
+            txtC2.setText(cd.getDuracion() != null ? cd.getDuracion().toString() : "");
+            txtC1.setText(cd.getGenero());
+            setVisible(false, listaUno);
         } else if (e instanceof Documento) {
+            lbC1.setText("Tipo de documento");
             Documento doc = (Documento) e;
             txtC1.setText(doc.getTipoDocumentoDetalle());
+
+            setVisible(false, listaTres);
         } else if (e instanceof Periodico) {
+            lbC1.setText("Tipo periódico");
+            lbC4.setText("Fecha publicación");
             Periodico p = (Periodico) e;
             txtFecha.setDate(p.getFechaPublicacion() != null ? Date.valueOf(p.getFechaPublicacion()) : null);
             txtC1.setText(p.getTipoPeriodico());
+
+            setVisible(false, listaCuatro);
         } else if (e instanceof Revista) {
+            lbC1.setText("Tipo revista");
+            lbC4.setText("Fecha publicación");
             Revista r = (Revista) e;
             txtFecha.setDate(r.getFechaPublicacion() != null ? Date.valueOf(r.getFechaPublicacion()) : null);
             txtC1.setText(r.getTipoRevista());
+
+            setVisible(false, listaCuatro);
         }
     }
 

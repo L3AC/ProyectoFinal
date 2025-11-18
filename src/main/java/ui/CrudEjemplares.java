@@ -3,6 +3,7 @@ package ui;
 import dao.EjemplarDAO;
 import java.awt.BorderLayout;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -13,6 +14,7 @@ public class CrudEjemplares extends javax.swing.JPanel {
 
     private EjemplarDAO dao = new EjemplarDAO();
     private DefaultTableModel modelo;
+    private int fila; 
 
     public CrudEjemplares() {
         initComponents();
@@ -171,7 +173,20 @@ public class CrudEjemplares extends javax.swing.JPanel {
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
+        if (fila >= 0) {
+                int id = (Integer) modelo.getValueAt(fila, 0);
+                int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar este ejemplar?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if (dao.eliminarEjemplar(id)) {
+                        JOptionPane.showMessageDialog(this, "Ejemplar eliminado correctamente.");
+                        buscar(txtBuscar.getText());
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Error al eliminar el ejemplar.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Seleccione un ejemplar de la tabla para eliminar.");
+            }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void tablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaMouseClicked
@@ -184,6 +199,11 @@ public class CrudEjemplares extends javax.swing.JPanel {
                 cargarPanel(new FormEjemplar("E", ejemplar));//EDITAR REGISTRO
             }
         }
+        if (evt.getClickCount() == 1) {
+            fila = tabla.getSelectedRow();
+
+        }
+
     }//GEN-LAST:event_tablaMouseClicked
 
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
