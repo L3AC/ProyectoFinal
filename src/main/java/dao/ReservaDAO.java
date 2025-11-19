@@ -103,15 +103,29 @@ public class ReservaDAO {
         return reservas;
     }
 
-    // --- NUEVA FUNCIÓN: Buscar reservas con filtros ---
-    public List<Reserva> buscarReservas(String filtro) throws SQLException {
+    public boolean eliminarReserva(int idReserva) throws SQLException {
+        String sql = "DELETE FROM Reservas WHERE id_reserva = ?";
+        try (Connection conn = ConexionBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idReserva);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+public List<Reserva> buscarReservas(String filtro) throws SQLException {
         String sql = """
             SELECT 
+                res.id_reserva,
+                res.id_usuario,
+                res.id_ejemplar,
                 e.titulo AS titulo,
                 e.codigo_ejemplar AS codigo,
                 e.tipo_documento AS tipo_documento,
                 u.correo AS correo_usuario,
-                r.nombre_rol AS nombre_rol,
+                r.nombre_rol,
+                r.cant_max_prestamo, 
+                r.dias_prestamo,
+                r.mora_diaria,
                 res.fecha_reserva AS fecha_reserva
             FROM Reservas res
             INNER JOIN Ejemplares e ON res.id_ejemplar = e.id_ejemplar
@@ -135,19 +149,31 @@ public class ReservaDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Reserva reserva = new Reserva();
+                    reserva.setIdReserva(rs.getInt("id_reserva"));
 
+                    // Construir Ejemplar
                     Ejemplar ejemplar = new Ejemplar();
+                    ejemplar.setIdEjemplar(rs.getInt("id_ejemplar")); 
                     ejemplar.setTitulo(rs.getString("titulo"));
                     ejemplar.setCodigoEjemplar(rs.getString("codigo"));
+                    ejemplar.setTipoDocumento(Ejemplar.TipoDocumento.valueOf(rs.getString("tipo_documento")));
                     reserva.setEjemplar(ejemplar);
 
+                    // Construir Usuario
                     Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(rs.getInt("id_usuario"));
                     usuario.setCorreo(rs.getString("correo_usuario"));
+                    
+                    // Construir Rol COMPLETO (Aquí estaba el error antes)
                     Rol rol = new Rol();
                     rol.setNombreRol(rs.getString("nombre_rol"));
-                    usuario.setRol(rol);
+                    rol.setCantMaxPrestamo(rs.getInt("cant_max_prestamo")); // <--- ESTO FALTABA
+                    rol.setDiasPrestamo(rs.getInt("dias_prestamo"));        // Útil para el préstamo
+                    rol.setMoraDiaria(rs.getDouble("mora_diaria"));         // Útil para cálculos
+                    
+                    usuario.setRol(rol); // Asignamos el rol al usuario
+                    
                     reserva.setUsuario(usuario);
-
                     reserva.setFechaReserva(rs.getDate("fecha_reserva"));
 
                     reservas.add(reserva);
