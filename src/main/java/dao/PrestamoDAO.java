@@ -34,7 +34,7 @@ public class PrestamoDAO {
         }
     }
 
-    public void devolverPrestamo(int idPrestamo) throws SQLException {
+    public boolean devolverPrestamo(int idPrestamo) throws SQLException {
         String sql = "UPDATE Prestamos SET estado = 'Devuelto', fecha_devolucion = ? WHERE id_prestamo = ?";
         try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(System.currentTimeMillis()));
@@ -44,6 +44,7 @@ public class PrestamoDAO {
 
         int idEjemplar = obtenerIdEjemplarPorPrestamo(idPrestamo);
         actualizarEstadoEjemplar(idEjemplar, "Disponible");
+        return true;
     }
 
     private int obtenerIdEjemplarPorPrestamo(int idPrestamo) throws SQLException {
@@ -155,35 +156,28 @@ public class PrestamoDAO {
     // --- NUEVA FUNCIÓN: Buscar préstamos con filtros ---
     public List<Prestamo> buscarPrestamos(String filtro) throws SQLException {
         String sql = """
-    SELECT 
-        p.id_prestamo AS id_prestamo,
-        e.titulo AS titulo,
-        e.codigo_ejemplar AS codigo,
-        e.tipo_documento AS tipo_documento,
-        u.correo AS correo_usuario,
-        r.nombre_rol AS nombre_rol,
-        p.fecha_prestamo AS fecha_prestamo,
-        p.estado AS estado,
-
-        -- campos nuevos
+    
+    SELECT  p.id_prestamo AS id_prestamo,e.titulo AS titulo,e.codigo_ejemplar AS codigo,e.tipo_documento AS tipo_documento,
+        u.correo AS correo_usuario,r.nombre_rol AS nombre_rol,p.fecha_prestamo AS fecha_prestamo,p.estado AS estado,
+        
+        -- Días transcurridos
         DATEDIFF(CURRENT_DATE, p.fecha_prestamo) AS dias_transcurridos,
+        
+        -- Cálculo de mora
         CASE 
             WHEN DATEDIFF(CURRENT_DATE, p.fecha_prestamo) > r.dias_prestamo 
                 THEN (DATEDIFF(CURRENT_DATE, p.fecha_prestamo) - r.dias_prestamo) * r.mora_diaria
             ELSE 0 
         END AS total_mora
-
+    
     FROM Prestamos p
     INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
     INNER JOIN Usuarios u   ON p.id_usuario = u.id_usuario
     INNER JOIN Roles r      ON u.id_rol = r.id_rol
-
-    WHERE 
-        e.titulo LIKE ? OR 
-        u.correo LIKE ? OR 
-        e.tipo_documento LIKE ?
-
-    ORDER BY p.fecha_prestamo DESC
+    
+    WHERE (e.titulo LIKE ? OR u.correo LIKE ? OR e.tipo_documento LIKE ? ) AND p.estado = 'Activo' 
+    
+    ORDER BY p.fecha_prestamo DESC;
     """;
 
         List<Prestamo> prestamos = new ArrayList<>();
@@ -218,7 +212,7 @@ public class PrestamoDAO {
 
                     // --- nuevos campos ---
                     prestamo.setDiasTranscurridos(rs.getInt("dias_transcurridos"));
-                    prestamo.setTotalMora(rs.getDouble("total_mora"));
+                    prestamo.setTotalMora(rs.getBigDecimal("total_mora"));
 
                     prestamos.add(prestamo);
                 }
