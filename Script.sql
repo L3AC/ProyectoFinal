@@ -4,7 +4,6 @@
 DROP DATABASE IF EXISTS biblioteca_don_bosco;
 CREATE DATABASE IF NOT EXISTS biblioteca_don_bosco;
 USE biblioteca_don_bosco;
-
 -- Tabla de Roles
 CREATE TABLE Roles (
     id_rol INT PRIMARY KEY AUTO_INCREMENT,
@@ -33,7 +32,7 @@ CREATE TABLE Ejemplares (
     autor VARCHAR(200),
     ubicacion VARCHAR(100),
     tipo_documento ENUM('Libro', 'Diccionario', 'Mapas', 'Tesis', 'DVD', 'VHS', 'Cassettes', 'CD', 'Documento', 'Periodicos', 'Revistas') NOT NULL,
-    estado ENUM('Disponible', 'Prestado') DEFAULT 'Disponible'
+    estado ENUM('Disponible', 'Prestado''Reservado') DEFAULT 'Disponible'
 );
 -- Tabla de Reservas
 CREATE TABLE Reservas (
@@ -201,3 +200,81 @@ INSERT INTO Documentos (id_ejemplar, tipo_documento_detalle) VALUES
 
 INSERT INTO Periodicos (id_ejemplar, fecha_publicacion, tipo_periodico) VALUES
 (11, '2023-06-01', 'Nacional');
+
+/*
+SELECT  p.id_prestamo,u.nombre,u.apellido, e.titulo,r.mora_diaria,r.dias_prestamo,p.fecha_prestamo,
+    DATEDIFF(CURRENT_DATE, p.fecha_prestamo) AS dias_transcurridos,
+    CASE 
+        WHEN DATEDIFF(CURRENT_DATE, p.fecha_prestamo) > r.dias_prestamo 
+        THEN (DATEDIFF(CURRENT_DATE, p.fecha_prestamo) - r.dias_prestamo) * r.mora_diaria
+        ELSE 0 
+    END AS total_mora
+FROM Prestamos p JOIN Usuarios u ON p.id_usuario = u.id_usuario JOIN Roles r ON u.id_rol = r.id_rol
+JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar WHERE p.id_prestamo = 5 AND p.estado = 'Activo';
+
+SELECT  p.id_prestamo AS id_prestamo,e.titulo AS titulo,e.codigo_ejemplar AS codigo,e.tipo_documento AS tipo_documento,
+    u.correo AS correo_usuario,r.nombre_rol AS nombre_rol,p.fecha_prestamo AS fecha_prestamo,p.estado AS estado,
+    
+    -- Días transcurridos
+    DATEDIFF(CURRENT_DATE, p.fecha_prestamo) AS dias_transcurridos,
+    
+    -- Cálculo de mora
+    CASE 
+        WHEN DATEDIFF(CURRENT_DATE, p.fecha_prestamo) > r.dias_prestamo 
+            THEN (DATEDIFF(CURRENT_DATE, p.fecha_prestamo) - r.dias_prestamo) * r.mora_diaria
+        ELSE 0 
+    END AS total_mora
+
+FROM Prestamos p
+INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
+INNER JOIN Usuarios u   ON p.id_usuario = u.id_usuario
+INNER JOIN Roles r      ON u.id_rol = r.id_rol
+
+WHERE (e.titulo LIKE "%%" OR u.correo LIKE "%%" OR e.tipo_documento LIKE "%%") AND p.estado = 'Activo'
+
+ORDER BY p.fecha_prestamo DESC;*/
+
+
+-- Inserción de usuarios adicionales para pruebas
+INSERT INTO Usuarios (nombre, apellido, correo, contrasena, id_rol) VALUES
+('Carlos', 'González', 'carlos.gonzalez@udb.edu.sv', 
+'$2a$10$6SNYnsJROk3eubVhAgS/rudlBpN8fC9XmMuPC0l8svopDdfPr3rcO', 2), -- Profesor
+('María', 'López', 'maria.lopez@udb.edu.sv', 
+'$2a$10$6SNYnsJROk3eubVhAgS/rudlBpN8fC9XmMuPC0l8svopDdfPr3rcO', 3), -- Alumno
+('Andrés', 'Hernández', 'andres.hernandez@udb.edu.sv', 
+'$2a$10$6SNYnsJROk3eubVhAgS/rudlBpN8fC9XmMuPC0l8svopDdfPr3rcO', 3); -- Alumno
+
+-- Registro de reservas
+INSERT INTO Reservas (id_usuario, id_ejemplar, fecha_reserva) VALUES
+(2, 2, '2025-11-10'), -- María (Alumno) reserva National Geographic
+(3, 3, '2025-11-15'), -- Andrés (Alumno) reserva Best of Classic Music
+(2, 6, '2025-11-18'); -- María (Alumno) reserva Mapa físico de Sudamérica
+
+-- Registro de préstamos sin mora (aún dentro del plazo)
+-- Profesor Carlos: préstamo reciente (dentro de 15 días)
+INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado) VALUES
+(2, 1, '2025-11-15', 'Activo'); -- Cien años de soledad (5 días de préstamo)
+
+-- Alumno María: préstamo reciente (dentro de 7 días)
+INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado) VALUES
+(3, 5, '2025-11-18', 'Activo'); -- Diccionario de la Lengua Española (2 días de préstamo)
+
+-- Alumno Andrés: préstamo devuelto a tiempo
+INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado, fecha_devolucion) VALUES
+(4, 11, '2025-11-10', 'Devuelto', '2025-11-16'); -- El País (devuelto dentro del plazo)
+
+-- Registro de préstamos con mora (fuera del plazo permitido)
+-- Préstamo con 8 días de retraso (mora de 1 día) para alumno María
+INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado) VALUES
+(3, 9, '2025-11-11', 'Activo'); -- Historia del rock (8 días de retraso)
+
+-- Préstamo con 10 días de retraso para alumno Andrés
+INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado) VALUES
+(4, 7, '2025-11-09', 'Activo'); -- Análisis de estructuras de datos (10 días de retraso)
+
+-- Actualizar estados de ejemplares según su situación
+-- Ejemplares en préstamo activo
+UPDATE Ejemplares SET estado = 'Prestado' WHERE id_ejemplar IN (1, 5, 9, 7);
+
+-- Ejemplares en reserva (no prestados activamente)
+UPDATE Ejemplares SET estado = 'Reservado' WHERE id_ejemplar IN (2, 3, 6);
