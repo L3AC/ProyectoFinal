@@ -1,5 +1,6 @@
 package modelo;
 
+import java.math.BigDecimal;
 import modelo.Ejemplar;
 import modelo.Usuario;
 
@@ -14,7 +15,7 @@ public class Prestamo {
     private String estado; // "Activo" o "Devuelto"
     private Date fechaDevolucion;
     private int diasTranscurridos;
-    private double totalMora;
+    private BigDecimal totalMora;
 
     // Constructor vacío
     public Prestamo() {
@@ -88,11 +89,11 @@ public class Prestamo {
         this.diasTranscurridos = diasTranscurridos;
     }
 
-    public double getTotalMora() {
+    public BigDecimal getTotalMora() {
         return totalMora;
     }
 
-    public void setTotalMora(double totalMora) {
+    public void setTotalMora(BigDecimal totalMora) {
         this.totalMora = totalMora;
     }
 }

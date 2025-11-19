@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import modelo.Usuario;
 import ui.CrudEjemplares;
 import ui.CrudPrestamos;
+import ui.CrudReservas;
 
 public class Home extends javax.swing.JFrame {
 
@@ -198,7 +199,7 @@ public class Home extends javax.swing.JFrame {
 
     private void lbOpcion6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseClicked
         // TODO add your handling code here:
-        cargarPanel(new CrudPrestamos());
+        cargarPanel(new CrudReservas());
     }//GEN-LAST:event_lbOpcion6MouseClicked
 
     private void cargarPanel(JPanel panel) {

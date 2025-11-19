@@ -3,7 +3,9 @@ package ui;
 import dao.EjemplarDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Image;
 import static java.lang.Integer.parseInt;
+import java.net.URL;
 import java.sql.Date;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -11,6 +13,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
@@ -71,6 +74,25 @@ public class FormEjemplar extends javax.swing.JPanel {
         dateField.setEditable(false);
         dateField.setBackground(Color.WHITE);
         dateField.setForeground(Color.BLACK);
+        
+        
+        try {
+            URL urlFlecha = getClass().getResource("/img/flecha.png");
+            if (urlFlecha != null) {
+                ImageIcon rawIcon = new ImageIcon(urlFlecha);
+                Image esc = rawIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                btnVolver.setIcon(new ImageIcon(esc));
+                btnVolver.setText("");
+                btnVolver.setBorderPainted(false);
+                btnVolver.setContentAreaFilled(false);
+                btnVolver.setFocusPainted(false);
+                btnVolver.setToolTipText("Regresar");
+            } else {
+                System.err.println("No se encontró la imagen /img/flecha.png en el classpath.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
     }
 
@@ -571,9 +593,10 @@ public class FormEjemplar extends javax.swing.JPanel {
 
                     // Llama al DAO para insertar el nuevo objeto
                     boolean insertado = dao.agregarEjemplar(nuevoEjemplar);
+                    
                     if (insertado) {
                         JOptionPane.showMessageDialog(this, "Ejemplar agregado exitosamente.");
-                        // Opcional: limpiar formulario, refrescar tabla, etc.
+                        cargarPanel(new CrudEjemplares());
                     } else {
                         JOptionPane.showMessageDialog(this, "Error al agregar el ejemplar.", "Error", JOptionPane.ERROR_MESSAGE);
                     }

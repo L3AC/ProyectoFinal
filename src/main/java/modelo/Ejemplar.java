@@ -6,7 +6,7 @@ public class Ejemplar {
     }
 
     public enum Estado {
-        Disponible, Prestado
+        Disponible, Prestado, Reservado
     }
 
     private Integer idEjemplar;
