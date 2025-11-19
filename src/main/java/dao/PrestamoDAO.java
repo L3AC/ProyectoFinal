@@ -15,8 +15,7 @@ public class PrestamoDAO {
 
     public void crearPrestamo(Prestamo prestamo) throws SQLException {
         String sql = "INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_prestamo, estado) VALUES (?, ?, ?, ?)";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, prestamo.getIdUsuario().getIdUsuario());
             stmt.setInt(2, prestamo.getIdEjemplar().getIdEjemplar());
             stmt.setDate(3, new java.sql.Date(prestamo.getFechaPrestamo().getTime()));
@@ -37,8 +36,7 @@ public class PrestamoDAO {
 
     public void devolverPrestamo(int idPrestamo) throws SQLException {
         String sql = "UPDATE Prestamos SET estado = 'Devuelto', fecha_devolucion = ? WHERE id_prestamo = ?";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, new java.sql.Date(System.currentTimeMillis()));
             stmt.setInt(2, idPrestamo);
             stmt.executeUpdate();
@@ -50,8 +48,7 @@ public class PrestamoDAO {
 
     private int obtenerIdEjemplarPorPrestamo(int idPrestamo) throws SQLException {
         String sql = "SELECT id_ejemplar FROM Prestamos WHERE id_prestamo = ?";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idPrestamo);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -64,8 +61,7 @@ public class PrestamoDAO {
 
     private void actualizarEstadoEjemplar(int idEjemplar, String nuevoEstado) throws SQLException {
         String sql = "UPDATE Ejemplares SET estado = ? WHERE id_ejemplar = ?";
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nuevoEstado);
             stmt.setInt(2, idEjemplar);
             stmt.executeUpdate();
@@ -82,8 +78,7 @@ public class PrestamoDAO {
             AND DATE_ADD(p.fecha_prestamo, INTERVAL r.dias_prestamo DAY) < CURDATE()
             """;
 
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idUsuario);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -105,8 +100,7 @@ public class PrestamoDAO {
             AND DATE_ADD(p.fecha_prestamo, INTERVAL r.dias_prestamo DAY) < CURDATE()
             """;
 
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idPrestamo);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -128,8 +122,7 @@ public class PrestamoDAO {
             """;
 
         List<Prestamo> prestamos = new ArrayList<>();
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idUsuario);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -162,29 +155,39 @@ public class PrestamoDAO {
     // --- NUEVA FUNCIÓN: Buscar préstamos con filtros ---
     public List<Prestamo> buscarPrestamos(String filtro) throws SQLException {
         String sql = """
-            SELECT 
-                p.id_prestamo AS id_prestamo,
-                e.titulo AS titulo,
-                e.codigo_ejemplar AS codigo,
-                e.tipo_documento AS tipo_documento,
-                u.correo AS correo_usuario,
-                r.nombre_rol AS nombre_rol,
-                p.fecha_prestamo AS fecha_prestamo,
-                p.estado AS estado
-            FROM Prestamos p
-            INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
-            INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario
-            INNER JOIN Roles r ON u.id_rol = r.id_rol
-            WHERE 
-                e.titulo LIKE ? OR 
-                u.correo LIKE ? OR 
-                e.tipo_documento LIKE ?
-            ORDER BY p.fecha_prestamo DESC
-            """;
+    SELECT 
+        p.id_prestamo AS id_prestamo,
+        e.titulo AS titulo,
+        e.codigo_ejemplar AS codigo,
+        e.tipo_documento AS tipo_documento,
+        u.correo AS correo_usuario,
+        r.nombre_rol AS nombre_rol,
+        p.fecha_prestamo AS fecha_prestamo,
+        p.estado AS estado,
+
+        -- campos nuevos
+        DATEDIFF(CURRENT_DATE, p.fecha_prestamo) AS dias_transcurridos,
+        CASE 
+            WHEN DATEDIFF(CURRENT_DATE, p.fecha_prestamo) > r.dias_prestamo 
+                THEN (DATEDIFF(CURRENT_DATE, p.fecha_prestamo) - r.dias_prestamo) * r.mora_diaria
+            ELSE 0 
+        END AS total_mora
+
+    FROM Prestamos p
+    INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
+    INNER JOIN Usuarios u   ON p.id_usuario = u.id_usuario
+    INNER JOIN Roles r      ON u.id_rol = r.id_rol
+
+    WHERE 
+        e.titulo LIKE ? OR 
+        u.correo LIKE ? OR 
+        e.tipo_documento LIKE ?
+
+    ORDER BY p.fecha_prestamo DESC
+    """;
 
         List<Prestamo> prestamos = new ArrayList<>();
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             String param = "%" + filtro + "%";
             stmt.setString(1, param);
             stmt.setString(2, param);
@@ -198,20 +201,28 @@ public class PrestamoDAO {
                     Ejemplar ejemplar = new Ejemplar();
                     ejemplar.setTitulo(rs.getString("titulo"));
                     ejemplar.setCodigoEjemplar(rs.getString("codigo"));
+                    ejemplar.setTipoDocumento(Ejemplar.TipoDocumento.valueOf(rs.getString("tipo_documento")));
                     prestamo.setIdEjemplar(ejemplar);
 
                     Usuario usuario = new Usuario();
                     usuario.setCorreo(rs.getString("correo_usuario"));
+
                     Rol rol = new Rol();
                     rol.setNombreRol(rs.getString("nombre_rol"));
                     usuario.setRol(rol);
+
                     prestamo.setIdUsuario(usuario);
 
                     prestamo.setFechaPrestamo(rs.getDate("fecha_prestamo"));
                     prestamo.setEstado(rs.getString("estado"));
 
+                    // --- nuevos campos ---
+                    prestamo.setDiasTranscurridos(rs.getInt("dias_transcurridos"));
+                    prestamo.setTotalMora(rs.getDouble("total_mora"));
+
                     prestamos.add(prestamo);
                 }
+
             }
         }
         return prestamos;

@@ -1,24 +1,28 @@
 package modelo;
+
 import modelo.Ejemplar;
 import modelo.Usuario;
-
 
 import java.sql.Date;
 
 public class Prestamo {
+
     private Integer idPrestamo;
-    private Usuario idUsuario; 
-    private Ejemplar idEjemplar; 
+    private Usuario idUsuario;
+    private Ejemplar idEjemplar;
     private Date fechaPrestamo;
     private String estado; // "Activo" o "Devuelto"
     private Date fechaDevolucion;
+    private int diasTranscurridos;
+    private double totalMora;
 
     // Constructor vacío
-    public Prestamo() {}
+    public Prestamo() {
+    }
 
     // Constructor con parámetros
-    public Prestamo(Integer idPrestamo, Usuario idUsuario, Ejemplar idEjemplar, Date fechaPrestamo, 
-                    String estado, Date fechaDevolucion) {
+    public Prestamo(Integer idPrestamo, Usuario idUsuario, Ejemplar idEjemplar, Date fechaPrestamo,
+            String estado, Date fechaDevolucion) {
         this.idPrestamo = idPrestamo;
         this.idUsuario = idUsuario;
         this.idEjemplar = idEjemplar;
@@ -74,5 +78,21 @@ public class Prestamo {
 
     public void setFechaDevolucion(Date fechaDevolucion) {
         this.fechaDevolucion = fechaDevolucion;
+    }
+
+    public int getDiasTranscurridos() {
+        return diasTranscurridos;
+    }
+
+    public void setDiasTranscurridos(int diasTranscurridos) {
+        this.diasTranscurridos = diasTranscurridos;
+    }
+
+    public double getTotalMora() {
+        return totalMora;
+    }
+
+    public void setTotalMora(double totalMora) {
+        this.totalMora = totalMora;
     }
 }

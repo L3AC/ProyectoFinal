@@ -1,27 +1,10 @@
+
 package ui;
 
-import dao.PrestamoDAO;
-import java.sql.SQLException;
-import java.util.List;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import modelo.Ejemplar;
-import modelo.Prestamo;
+public class CrudReservas extends javax.swing.JPanel {
 
-public class CrudPrestamos extends javax.swing.JPanel {
-
-    private PrestamoDAO dao = new PrestamoDAO();
-    private DefaultTableModel modelo;
-    private int fila;
-
-    public CrudPrestamos() {
+    public CrudReservas() {
         initComponents();
-        TableColumnModel tcm = tabla.getColumnModel();
-        TableColumn columna = tcm.getColumn(0);
-        tcm.removeColumn(columna);
-        modelo = (DefaultTableModel) tabla.getModel(); // usa el modelo de la tabla
-        buscar("");
     }
 
     @SuppressWarnings("unchecked")
@@ -41,7 +24,7 @@ public class CrudPrestamos extends javax.swing.JPanel {
 
         Nombre1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         Nombre1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Nombre1.setText("Gestión de prestamos");
+        Nombre1.setText("Gestión de reservas");
 
         btnDevolver.setText("Devolver");
         btnDevolver.setActionCommand("Devolución");
@@ -78,7 +61,6 @@ public class CrudPrestamos extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(tabla);
-        tabla.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         txtBuscar.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
@@ -187,44 +169,24 @@ public class CrudPrestamos extends javax.swing.JPanel {
 
     private void btnDevolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDevolverActionPerformed
         // TODO add your handling code here:
-
     }//GEN-LAST:event_btnDevolverActionPerformed
 
     private void tablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaMouseClicked
-        if (evt.getClickCount() == 1) {
+        /*if (evt.getClickCount() == 1) {
 
             int fila = tabla.getSelectedRow();
             if (fila >= 0) {
                 int id = (int) modelo.getValueAt(fila, 0);
 
             }
-        }
+        }*/
     }//GEN-LAST:event_tablaMouseClicked
 
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
 
-        buscar(txtBuscar.getText());
+        //buscar(txtBuscar.getText());
     }//GEN-LAST:event_txtBuscarKeyTyped
-    private void buscar(String texto) {
-        try {
-            modelo.setRowCount(0); // Limpiar tabla
-            List<Prestamo> lista = dao.buscarPrestamos(texto); // Llamada al DAO
 
-            for (Prestamo e : lista) {
-                modelo.addRow(new Object[]{
-                    e.getIdPrestamo(),
-                    e.getIdEjemplar().getCodigoEjemplar(),
-                    e.getIdEjemplar().getTitulo(),
-                    e.getFechaPrestamo(),
-                    e.getDiasTranscurridos(),
-                    "$"+e.getTotalMora(),
-                    e.getIdUsuario().getCorreo(),
-                    e.getIdUsuario().getRol().getNombreRol()});
-            }
-        } catch (SQLException ex) {
-            System.getLogger(CrudPrestamos.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Nombre;

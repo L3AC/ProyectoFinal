@@ -2,11 +2,13 @@ package main;
 
 import ui.CrudUsuarios;
 import java.awt.Image;
+import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import modelo.Usuario;
 import ui.CrudEjemplares;
+import ui.CrudPrestamos;
 
 public class Home extends javax.swing.JFrame {
 
@@ -52,6 +54,7 @@ public class Home extends javax.swing.JFrame {
         lbOpcion5 = new javax.swing.JLabel();
         lbTitulo1 = new javax.swing.JLabel();
         lbIcono = new javax.swing.JLabel();
+        lbOpcion6 = new javax.swing.JLabel();
         mainPanel = new javax.swing.JPanel();
 
         jMenuItem1.setText("jMenuItem1");
@@ -112,6 +115,14 @@ public class Home extends javax.swing.JFrame {
 
         lbIcono.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        lbOpcion6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbOpcion6.setText("Reservas");
+        lbOpcion6.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lbOpcion6MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout menuPanelLayout = new javax.swing.GroupLayout(menuPanel);
         menuPanel.setLayout(menuPanelLayout);
         menuPanelLayout.setHorizontalGroup(
@@ -120,12 +131,16 @@ public class Home extends javax.swing.JFrame {
             .addComponent(lbOpcion2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(lbOpcion3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(lbOpcion4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(lbOpcion5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(lbTitulo1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(menuPanelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
                 .addComponent(lbIcono, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(24, Short.MAX_VALUE))
+            .addGroup(menuPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lbOpcion5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(lbOpcion6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         menuPanelLayout.setVerticalGroup(
             menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -137,13 +152,15 @@ public class Home extends javax.swing.JFrame {
                 .addComponent(lbOpcion1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(27, 27, 27)
                 .addComponent(lbOpcion2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addComponent(lbOpcion6, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(lbOpcion3, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbOpcion4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
+                .addGap(18, 18, 18)
                 .addComponent(lbOpcion5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addGap(21, 21, 21))
         );
 
         jPanel3.add(menuPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 490));
@@ -166,7 +183,9 @@ public class Home extends javax.swing.JFrame {
     }//GEN-LAST:event_lbOpcion2MouseClicked
 
     private void lbOpcion3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseClicked
-        // TODO add your handling code here:
+
+            // TODO add your handling code here:
+            cargarPanel(new CrudPrestamos());
     }//GEN-LAST:event_lbOpcion3MouseClicked
 
     private void lbOpcion4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseClicked
@@ -176,6 +195,11 @@ public class Home extends javax.swing.JFrame {
     private void lbOpcion5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion5MouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_lbOpcion5MouseClicked
+
+    private void lbOpcion6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseClicked
+        // TODO add your handling code here:
+        cargarPanel(new CrudPrestamos());
+    }//GEN-LAST:event_lbOpcion6MouseClicked
 
     private void cargarPanel(JPanel panel) {
         mainPanel.removeAll();
@@ -218,6 +242,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JLabel lbOpcion3;
     private javax.swing.JLabel lbOpcion4;
     private javax.swing.JLabel lbOpcion5;
+    private javax.swing.JLabel lbOpcion6;
     private javax.swing.JLabel lbTitulo1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel menuPanel;
