@@ -52,7 +52,7 @@ public class FormEjemplar extends javax.swing.JPanel {
         this.accion = accion;
         if ("E".equals(accion)) {
             lbTitulo.setText("Editar ejemplar");
-            cbTD.setSelectedItem(ejemplar.getTipoDocumento());
+            cbTD.setSelectedItem(ejemplar.getTipoDocumento().name());
             cbTD.setEnabled(false);
             this.ejemplarActual = ejemplar;
             cargarDatosEnFormulario(ejemplar);
