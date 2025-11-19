@@ -32,7 +32,7 @@ CREATE TABLE Ejemplares (
     autor VARCHAR(200),
     ubicacion VARCHAR(100),
     tipo_documento ENUM('Libro', 'Diccionario', 'Mapas', 'Tesis', 'DVD', 'VHS', 'Cassettes', 'CD', 'Documento', 'Periodicos', 'Revistas') NOT NULL,
-    estado ENUM('Disponible', 'Prestado''Reservado') DEFAULT 'Disponible'
+    estado ENUM('Disponible', 'Prestado','Reservado') DEFAULT 'Disponible'
 );
 -- Tabla de Reservas
 CREATE TABLE Reservas (
