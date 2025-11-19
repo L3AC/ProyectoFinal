@@ -23,6 +23,8 @@ public class CrudPrestamos extends javax.swing.JPanel {
         tcm.removeColumn(columna);
         modelo = (DefaultTableModel) tabla.getModel(); // usa el modelo de la tabla
         buscar("");
+        tabla.setRowSelectionAllowed(true);
+        tabla.setColumnSelectionAllowed(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -57,7 +59,7 @@ public class CrudPrestamos extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "Título", "Código", "Fecha Prestamo", "Transcurrido", "Mora", "Usuario", "Rol"
+                "", "Título", "Código", "Prestamo", "Días Transcurridos", "Mora", "Usuario", "Rol"
             }
         ) {
             boolean[] canEdit = new boolean [] {

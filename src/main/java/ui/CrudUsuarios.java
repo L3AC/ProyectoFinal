@@ -34,6 +34,8 @@ public class CrudUsuarios extends javax.swing.JPanel {
         // Cargar datos iniciales
         cargarDatosCompletos();
         filtrarDatos();
+        tabla.setRowSelectionAllowed(true);
+        tabla.setColumnSelectionAllowed(false);
     }
 
     /**
@@ -45,8 +47,8 @@ public class CrudUsuarios extends javax.swing.JPanel {
     }
 
     /**
-     * Filtra la lista en caché (listaCompletaUsuarios) según el texto de búsqueda
-     * y actualiza la tabla.
+     * Filtra la lista en caché (listaCompletaUsuarios) según el texto de
+     * búsqueda y actualiza la tabla.
      */
     public void filtrarDatos() {
         modelo.setRowCount(0); // Limpiar tabla
@@ -58,21 +60,21 @@ public class CrudUsuarios extends javax.swing.JPanel {
             listaFiltrada = listaCompletaUsuarios;
         } else {
             listaFiltrada = listaCompletaUsuarios.stream()
-                    .filter(u -> u.getNombre().toLowerCase().contains(filtro) ||
-                            u.getApellido().toLowerCase().contains(filtro) ||
-                            u.getCorreo().toLowerCase().contains(filtro) ||
-                            u.getRol().getNombreRol().toLowerCase().contains(filtro))
+                    .filter(u -> u.getNombre().toLowerCase().contains(filtro)
+                    || u.getApellido().toLowerCase().contains(filtro)
+                    || u.getCorreo().toLowerCase().contains(filtro)
+                    || u.getRol().getNombreRol().toLowerCase().contains(filtro))
                     .collect(Collectors.toList());
         }
 
         // Llena el modelo de la tabla
         for (Usuario u : listaFiltrada) {
             modelo.addRow(new Object[]{
-                    u.getIdUsuario(),
-                    u.getNombre(),
-                    u.getApellido(),
-                    u.getCorreo(),
-                    u.getRol().getNombreRol() // Muestra el nombre del rol
+                u.getIdUsuario(),
+                u.getNombre(),
+                u.getApellido(),
+                u.getCorreo(),
+                u.getRol().getNombreRol() // Muestra el nombre del rol
             });
         }
     }
@@ -90,7 +92,6 @@ public class CrudUsuarios extends javax.swing.JPanel {
         // Este código asume que el 'mainPanel' de 'Home' es el padre de 'CrudUsuarios'
         // Si CrudUsuarios está dentro de otro panel (como en CrudEjemplares),
         // necesitas referenciar a ese panel.
-
         JPanel contenedor = (JPanel) this.getParent(); // Obtiene el 'mainPanel' de Home
         contenedor.removeAll();
         contenedor.setLayout(new BorderLayout()); // Asegura layout adecuado
