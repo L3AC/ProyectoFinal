@@ -75,6 +75,7 @@ public class FormEjemplar extends javax.swing.JPanel {
         dateField.setEditable(false);
         dateField.setBackground(Color.WHITE);
         dateField.setForeground(Color.BLACK);
+        txtId.setVisible(false);
 
         try {
             URL urlFlecha = getClass().getResource("/img/flecha.png");

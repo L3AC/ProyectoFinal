@@ -15,17 +15,11 @@ public class RolDAO {
 
     private static final Logger logger = LogManager.getLogger(RolDAO.class);
 
-    /**
-     * Lista todos los roles de la base de datos.
-     * @return Una lista de objetos Rol.
-     */
     public List<Rol> listarRoles() {
         List<Rol> lista = new ArrayList<>();
-        String sql = "SELECT id_rol, nombre_rol, cant_max_prestamo, dias_prestamo, mora_diaria FROM Roles";
+        String sql = "SELECT id_rol, nombre_rol, cant_max_prestamo, dias_prestamo, mora_diaria FROM Roles WHERE id_rol>0";
 
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Rol rol = new Rol();
@@ -42,18 +36,12 @@ public class RolDAO {
         }
         return lista;
     }
-    
-    /**
-     * Obtiene un rol por su ID.
-     * @param idRol
-     * @return Objeto Rol o null si no se encuentra.
-     */
+
     public Rol obtenerRolPorId(int idRol) {
         String sql = "SELECT * FROM Roles WHERE id_rol = ?";
-        
-        try (Connection conn = ConexionBD.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, idRol);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -67,8 +55,28 @@ public class RolDAO {
                 }
             }
         } catch (SQLException e) {
-             logger.error("Error al obtener rol por ID: " + idRol, e);
+            logger.error("Error al obtener rol por ID: " + idRol, e);
         }
         return null;
     }
+
+    public boolean editarRol(Rol rol) {
+        String sql = "UPDATE Roles SET  cant_max_prestamo = ?, dias_prestamo = ?, mora_diaria = ? WHERE id_rol = ?";
+
+        try (Connection conn = ConexionBD.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, rol.getCantMaxPrestamo());
+            ps.setInt(2, rol.getDiasPrestamo());
+            ps.setDouble(3, rol.getMoraDiaria());
+            ps.setInt(4, rol.getIdRol());
+
+            int filasAfectadas = ps.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            logger.error("Error al editar rol con ID: " + rol.getIdRol(), e);
+            return false;
+        }
+    }
+
 }

@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import modelo.Usuario;
+import ui.CrudConfiguracion;
 import ui.CrudEjemplares;
 import ui.CrudPrestamos;
 import ui.CrudReservas;
@@ -190,7 +191,7 @@ public class Home extends javax.swing.JFrame {
     }//GEN-LAST:event_lbOpcion3MouseClicked
 
     private void lbOpcion4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseClicked
-        // TODO add your handling code here:
+        cargarPanel(new CrudConfiguracion());
     }//GEN-LAST:event_lbOpcion4MouseClicked
 
     private void lbOpcion8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion8MouseClicked
