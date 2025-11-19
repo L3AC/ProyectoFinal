@@ -74,8 +74,8 @@ public class FormEjemplar extends javax.swing.JPanel {
         dateField.setEditable(false);
         dateField.setBackground(Color.WHITE);
         dateField.setForeground(Color.BLACK);
-        
-        
+        txtId.setVisible(false);
+
         try {
             URL urlFlecha = getClass().getResource("/img/flecha.png");
             if (urlFlecha != null) {
@@ -593,7 +593,7 @@ public class FormEjemplar extends javax.swing.JPanel {
 
                     // Llama al DAO para insertar el nuevo objeto
                     boolean insertado = dao.agregarEjemplar(nuevoEjemplar);
-                    
+
                     if (insertado) {
                         JOptionPane.showMessageDialog(this, "Ejemplar agregado exitosamente.");
                         cargarPanel(new CrudEjemplares());

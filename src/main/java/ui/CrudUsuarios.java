@@ -38,18 +38,11 @@ public class CrudUsuarios extends javax.swing.JPanel {
         tabla.setColumnSelectionAllowed(false);
     }
 
-    /**
-     * Carga o recarga la lista completa de usuarios desde la BD.
-     */
     public void cargarDatosCompletos() {
         // Carga la lista completa desde la BD
         listaCompletaUsuarios = dao.listarUsuarios();
     }
 
-    /**
-     * Filtra la lista en caché (listaCompletaUsuarios) según el texto de
-     * búsqueda y actualiza la tabla.
-     */
     public void filtrarDatos() {
         modelo.setRowCount(0); // Limpiar tabla
         String filtro = txtBuscar.getText().trim().toLowerCase();
