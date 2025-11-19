@@ -83,7 +83,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lbOpcion5" max="32767" attributes="0"/>
+                      <Component id="lbOpcion8" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="lbOpcion6" alignment="1" max="32767" attributes="0"/>
@@ -106,7 +106,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="lbOpcion4" min="-2" pref="31" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="lbOpcion5" min="-2" pref="31" max="-2" attributes="0"/>
+                      <Component id="lbOpcion8" min="-2" pref="31" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -150,13 +150,13 @@
                 <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lbOpcion4MouseClicked"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="lbOpcion5">
+            <Component class="javax.swing.JLabel" name="lbOpcion8">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="Cerrar sesi&#xf3;n"/>
               </Properties>
               <Events>
-                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lbOpcion5MouseClicked"/>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lbOpcion8MouseClicked"/>
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="lbTitulo1">

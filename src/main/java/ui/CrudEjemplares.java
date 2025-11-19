@@ -23,8 +23,9 @@ public class CrudEjemplares extends javax.swing.JPanel {
         tcm.removeColumn(columna);
         modelo = (DefaultTableModel) tabla.getModel(); // usa el modelo de la tabla
         buscar("");
-        
-        
+
+        tabla.setRowSelectionAllowed(true);
+        tabla.setColumnSelectionAllowed(false);
 
     }
 

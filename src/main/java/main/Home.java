@@ -18,7 +18,7 @@ public class Home extends javax.swing.JFrame {
     private ImageIcon icono;
 
     public Home() {
-        
+
     }
 
     public Home(Usuario usuario) {
@@ -52,7 +52,7 @@ public class Home extends javax.swing.JFrame {
         lbOpcion2 = new javax.swing.JLabel();
         lbOpcion3 = new javax.swing.JLabel();
         lbOpcion4 = new javax.swing.JLabel();
-        lbOpcion5 = new javax.swing.JLabel();
+        lbOpcion8 = new javax.swing.JLabel();
         lbTitulo1 = new javax.swing.JLabel();
         lbIcono = new javax.swing.JLabel();
         lbOpcion6 = new javax.swing.JLabel();
@@ -101,11 +101,11 @@ public class Home extends javax.swing.JFrame {
             }
         });
 
-        lbOpcion5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lbOpcion5.setText("Cerrar sesión");
-        lbOpcion5.addMouseListener(new java.awt.event.MouseAdapter() {
+        lbOpcion8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbOpcion8.setText("Cerrar sesión");
+        lbOpcion8.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lbOpcion5MouseClicked(evt);
+                lbOpcion8MouseClicked(evt);
             }
         });
 
@@ -139,7 +139,7 @@ public class Home extends javax.swing.JFrame {
                 .addContainerGap(24, Short.MAX_VALUE))
             .addGroup(menuPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lbOpcion5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lbOpcion8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(lbOpcion6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -160,7 +160,7 @@ public class Home extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbOpcion4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(lbOpcion5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lbOpcion8, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(21, 21, 21))
         );
 
@@ -185,17 +185,19 @@ public class Home extends javax.swing.JFrame {
 
     private void lbOpcion3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseClicked
 
-            // TODO add your handling code here:
-            cargarPanel(new CrudPrestamos());
+        // TODO add your handling code here:
+        cargarPanel(new CrudPrestamos());
     }//GEN-LAST:event_lbOpcion3MouseClicked
 
     private void lbOpcion4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_lbOpcion4MouseClicked
 
-    private void lbOpcion5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion5MouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_lbOpcion5MouseClicked
+    private void lbOpcion8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion8MouseClicked
+        Login login = new Login();
+        login.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_lbOpcion8MouseClicked
 
     private void lbOpcion6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseClicked
         // TODO add your handling code here:
@@ -242,8 +244,8 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JLabel lbOpcion2;
     private javax.swing.JLabel lbOpcion3;
     private javax.swing.JLabel lbOpcion4;
-    private javax.swing.JLabel lbOpcion5;
     private javax.swing.JLabel lbOpcion6;
+    private javax.swing.JLabel lbOpcion8;
     private javax.swing.JLabel lbTitulo1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel menuPanel;
