@@ -1,203 +1,250 @@
-
 package ui;
+
+import dao.PrestamoDAO;
+import dao.ReservaDAO;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.sql.Date;
+import java.time.LocalDate;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import modelo.Prestamo;
+import modelo.Reserva;
+import modelo.Ejemplar;
 
 public class CrudReservas extends javax.swing.JPanel {
 
+    private ReservaDAO reservaDAO = new ReservaDAO();
+    private PrestamoDAO prestamoDAO = new PrestamoDAO();
+    private DefaultTableModel modelo;
+
+    private List<Reserva> listaReservasActual;
+
     public CrudReservas() {
         initComponents();
+        configurarTabla();
+        buscar("");
+    }
+
+    private void configurarTabla() {
+        modelo = new DefaultTableModel(
+                new Object[][] {},
+                new String[] { "ID", "Título", "Código", "Usuario", "Rol", "Tipo Doc.", "Fecha Reserva" }) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        tabla.setModel(modelo);
+
+        TableColumnModel tcm = tabla.getColumnModel();
+        TableColumn columna = tcm.getColumn(0);
+        tcm.removeColumn(columna);
+    }
+
+    private void buscar(String texto) {
+        try {
+            modelo.setRowCount(0);
+            listaReservasActual = reservaDAO.buscarReservas(texto);
+
+            for (Reserva r : listaReservasActual) {
+                modelo.addRow(new Object[] {
+                        r.getIdReserva(),
+                        r.getEjemplar().getTitulo(),
+                        r.getEjemplar().getCodigoEjemplar(),
+                        r.getUsuario().getCorreo(),
+                        r.getUsuario().getRol().getNombreRol(),
+                        r.getEjemplar().getTipoDocumento(),
+                        r.getFechaReserva()
+                });
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error al buscar reservas: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    // --- ACCIÓN BOTÓN ACEPTAR ---
+    private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione una reserva para aceptar.");
+            return;
+        }
+
+        Reserva reservaSeleccionada = listaReservasActual.get(fila);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Desea aceptar la reserva y crear el préstamo para: " + reservaSeleccionada.getEjemplar().getTitulo()
+                        + "?",
+                "Confirmar Préstamo", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                if (!reservaDAO.puedeCrearPrestamo(reservaSeleccionada.getUsuario())) {
+                    JOptionPane.showMessageDialog(this,
+                            "El usuario tiene mora pendiente o excedió el límite de préstamos.", "No permitido",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                Prestamo nuevoPrestamo = new Prestamo();
+                nuevoPrestamo.setIdUsuario(reservaSeleccionada.getUsuario());
+                nuevoPrestamo.setIdEjemplar(reservaSeleccionada.getEjemplar());
+                nuevoPrestamo.setFechaPrestamo(Date.valueOf(LocalDate.now())); // Fecha actual
+                nuevoPrestamo.setEstado("Activo");
+
+                prestamoDAO.crearPrestamo(nuevoPrestamo);
+
+                reservaDAO.eliminarReserva(reservaSeleccionada.getIdReserva());
+
+                JOptionPane.showMessageDialog(this, "Préstamo creado exitosamente.");
+                buscar(txtBuscar.getText()); // Refrescar tabla
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Error al procesar el préstamo: " + ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    // --- ACCIÓN BOTÓN RECHAZAR/ELIMINAR ---
+    private void btnRechazarActionPerformed(java.awt.event.ActionEvent evt) {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione una reserva para rechazar.");
+            return;
+        }
+
+        Reserva reservaSeleccionada = listaReservasActual.get(fila);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Está seguro de rechazar/eliminar esta reserva?",
+                "Eliminar Reserva", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                if (reservaDAO.eliminarReserva(reservaSeleccionada.getIdReserva())) {
+                    JOptionPane.showMessageDialog(this, "Reserva eliminada.");
+                    buscar(txtBuscar.getText());
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo eliminar la reserva.");
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Error SQL: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {
+
+        javax.swing.SwingUtilities.invokeLater(() -> buscar(txtBuscar.getText()));
+    }
+
+    private void tablaMouseClicked(java.awt.event.MouseEvent evt) {
     }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
+        // Estilos
+        java.awt.Color colorFondo = new java.awt.Color(0, 140, 153);
+        java.awt.Font fuenteTitulo = new java.awt.Font("Segoe UI", 1, 24);
+        java.awt.Font fuenteLabel = new java.awt.Font("Segoe UI", 0, 14);
 
         mainPanel = new javax.swing.JPanel();
         Nombre1 = new javax.swing.JLabel();
-        btnDevolver = new javax.swing.JButton();
+        btnAceptar = new javax.swing.JButton();
+        btnRechazar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tabla = new javax.swing.JTable();
         txtBuscar = new javax.swing.JTextField();
         Nombre = new javax.swing.JLabel();
         Nombre2 = new javax.swing.JLabel();
-        Nombre3 = new javax.swing.JLabel();
-        Nombre4 = new javax.swing.JLabel();
 
-        Nombre1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        // Configuración del Panel
+        this.setLayout(new java.awt.BorderLayout()); // Usamos BorderLayout para el contenedor principal
+        mainPanel.setBackground(colorFondo);
+        mainPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        // --- Título ---
+        Nombre1.setFont(fuenteTitulo);
+        Nombre1.setForeground(java.awt.Color.WHITE);
         Nombre1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Nombre1.setText("Gestión de reservas");
+        Nombre1.setText("Gestión de Reservas");
+        mainPanel.add(Nombre1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 30, 300, 40));
 
-        btnDevolver.setText("Devolver");
-        btnDevolver.setActionCommand("Devolución");
-        btnDevolver.addActionListener(new java.awt.event.ActionListener() {
+        // --- Buscador ---
+        Nombre.setFont(fuenteLabel);
+        Nombre.setForeground(java.awt.Color.WHITE);
+        Nombre.setText("Buscar reserva:");
+        mainPanel.add(Nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 110, 250, -1));
+
+        txtBuscar.setFont(fuenteLabel);
+        txtBuscar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtBuscarKeyTyped(evt);
+            }
+        });
+        mainPanel.add(txtBuscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 135, 300, 35));
+
+        // --- Botones ---
+        Nombre2.setFont(new java.awt.Font("Segoe UI", 2, 12));
+        Nombre2.setForeground(java.awt.Color.WHITE);
+        Nombre2.setText("Gestionar selección:");
+        mainPanel.add(Nombre2, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 110, -1, -1));
+
+        btnAceptar.setText("Aceptar");
+        btnAceptar.setBackground(new java.awt.Color(144, 238, 144)); // Un verde suave
+        btnAceptar.setFont(fuenteLabel);
+        btnAceptar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDevolverActionPerformed(evt);
+                btnAceptarActionPerformed(evt);
             }
         });
+        mainPanel.add(btnAceptar, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 135, 110, 35));
 
+        btnRechazar.setText("Rechazar");
+        btnRechazar.setBackground(new java.awt.Color(255, 102, 102)); // Un rojo suave
+        btnRechazar.setFont(fuenteLabel);
+        btnRechazar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRechazarActionPerformed(evt);
+            }
+        });
+        mainPanel.add(btnRechazar, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 135, 110, 35));
+
+        // --- Tabla ---
         tabla.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "", "Título", "Código", "Fecha Prestamo", "Transcurrido", "Mora", "Usuario", "Rol"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        tabla.setColumnSelectionAllowed(true);
-        tabla.setRowHeight(40);
+                new Object[][] {},
+                new String[] {}));
+        tabla.setRowHeight(30);
+        tabla.getTableHeader().setFont(new java.awt.Font("Segoe UI", 1, 14));
         tabla.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tablaMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(tabla);
+        mainPanel.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 200, 700, 250));
 
-        txtBuscar.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtBuscarKeyTyped(evt);
-            }
-        });
+        this.add(mainPanel, java.awt.BorderLayout.CENTER);
+    }
 
-        Nombre.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        Nombre.setText("Buscar por usuario o título");
-
-        Nombre2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        Nombre2.setText("Click en el prestamo para ver mora");
-
-        Nombre3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        Nombre3.setText("Mora del prestamo");
-
-        Nombre4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        Nombre4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Nombre4.setText("$0.00");
-
-        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-        mainPanel.setLayout(mainPanelLayout);
-        mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addGap(87, 87, 87)
-                .addComponent(Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 281, Short.MAX_VALUE)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Nombre2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addComponent(btnDevolver, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(68, 68, 68)))
-                .addGap(20, 20, 20))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(Nombre3)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addComponent(Nombre4, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15)))
-                .addGap(306, 306, 306))
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addGap(307, 307, 307)
-                            .addComponent(Nombre1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addGap(45, 45, 45)
-                            .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 775, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-        mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(128, 128, 128)
-                        .addComponent(Nombre))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(79, 79, 79)
-                        .addComponent(Nombre3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Nombre4))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(129, 129, 129)
-                        .addComponent(Nombre2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnDevolver, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(295, Short.MAX_VALUE))
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(Nombre1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(94, 94, 94)
-                    .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(23, 23, 23)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 780, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 2, Short.MAX_VALUE)
-                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 3, Short.MAX_VALUE)))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 480, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void btnDevolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDevolverActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDevolverActionPerformed
-
-    private void tablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaMouseClicked
-        /*if (evt.getClickCount() == 1) {
-
-            int fila = tabla.getSelectedRow();
-            if (fila >= 0) {
-                int id = (int) modelo.getValueAt(fila, 0);
-
-            }
-        }*/
-    }//GEN-LAST:event_tablaMouseClicked
-
-    private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
-
-        //buscar(txtBuscar.getText());
-    }//GEN-LAST:event_txtBuscarKeyTyped
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify
     private javax.swing.JLabel Nombre;
     private javax.swing.JLabel Nombre1;
     private javax.swing.JLabel Nombre2;
-    private javax.swing.JLabel Nombre3;
-    private javax.swing.JLabel Nombre4;
-    private javax.swing.JButton btnDevolver;
+    private javax.swing.JButton btnAceptar;
+    private javax.swing.JButton btnRechazar;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTable tabla;
     private javax.swing.JTextField txtBuscar;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 }
