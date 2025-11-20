@@ -22,10 +22,11 @@ public class Login extends javax.swing.JFrame {
      */
     public Login() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        setupDiseño();
         // Nota: esto es un regex progresivo (sin ^ $ porque matches() exige match completo)
         Validacion.permitirSolo(txtCorreo, "[A-Za-z0-9@._+\\-]*", 50);
-
-        Validacion.permitirSolo(txtContra, "^[A-Za-z0-9@#$%^&+=!]{0,20}$", 20);
+        Validacion.permitirSolo(txtContra, "^[A-Za-z0-9@#$%^&+=!]{0,20}$", 20);;
     }
 
     /**
@@ -41,7 +42,7 @@ public class Login extends javax.swing.JFrame {
         lbU = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         txtCorreo = new javax.swing.JTextField();
-        txtContra = new javax.swing.JTextField();
+        txtContra = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -59,11 +60,17 @@ public class Login extends javax.swing.JFrame {
         jLabel2.setText("Contraseña");
         jLabel2.setToolTipText("");
 
+        txtContra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtContraActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(130, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -90,9 +97,9 @@ public class Login extends javax.swing.JFrame {
                 .addComponent(txtCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtContra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(38, 38, 38)
+                .addComponent(txtContra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnIngresar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(54, 54, 54))
         );
@@ -104,6 +111,10 @@ public class Login extends javax.swing.JFrame {
         // TODO add your handling code here:
         handleLogin(txtCorreo.getText(),txtContra.getText());
     }//GEN-LAST:event_btnIngresarActionPerformed
+
+    private void txtContraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtContraActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtContraActionPerformed
 
     private UsuarioDAO usuarioDAO = new UsuarioDAO();
 
@@ -173,12 +184,60 @@ public class Login extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new Login().setVisible(true));
     }
+    private void setupDiseño() {
+        javax.swing.JPanel panel = (javax.swing.JPanel) this.getContentPane();
+        panel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        panel.setBackground(new java.awt.Color(0, 140, 153)); // Azul Turquesa
+        java.awt.Font tituloFont = new java.awt.Font("Segoe UI", 1, 26);
+        java.awt.Font labelFont = new java.awt.Font("Segoe UI", 0, 14);
+        java.awt.Font inputFont = new java.awt.Font("Segoe UI", 0, 14);
+        java.awt.Color blanco = java.awt.Color.WHITE;
+
+        javax.swing.JLabel lbTitulo = new javax.swing.JLabel("Bienvenido");
+        lbTitulo.setFont(tituloFont);
+        lbTitulo.setForeground(blanco);
+        lbTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        panel.add(lbTitulo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 40, 450, 40));
+
+        lbU.setText("Correo Electrónico");
+        lbU.setFont(labelFont);
+        lbU.setForeground(blanco);
+        lbU.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        panel.add(lbU, new org.netbeans.lib.awtextra.AbsoluteConstraints(75, 110, 300, -1));
+
+        txtCorreo.setFont(inputFont);
+        txtCorreo.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Padding interno
+        panel.add(txtCorreo, new org.netbeans.lib.awtextra.AbsoluteConstraints(75, 135, 300, 40));
+
+        jLabel2.setText("Contraseña");
+        jLabel2.setFont(labelFont);
+        jLabel2.setForeground(blanco);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        panel.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(75, 200, 300, -1));
+
+        txtContra.setFont(inputFont);
+        txtContra.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        panel.add(txtContra, new org.netbeans.lib.awtextra.AbsoluteConstraints(75, 225, 300, 40));
+
+        btnIngresar.setText("INICIAR SESIÓN");
+        btnIngresar.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        btnIngresar.setBackground(new java.awt.Color(255, 255, 255)); // Blanco
+        btnIngresar.setForeground(new java.awt.Color(0, 140, 153));   // Letras turquesas
+        btnIngresar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        panel.add(btnIngresar, new org.netbeans.lib.awtextra.AbsoluteConstraints(125, 310, 200, 45));
+
+        this.setSize(465, 450); 
+
+        panel.revalidate();
+        panel.repaint();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnIngresar;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lbU;
-    private javax.swing.JTextField txtContra;
+    private javax.swing.JPasswordField txtContra;
     private javax.swing.JTextField txtCorreo;
     // End of variables declaration//GEN-END:variables
 }

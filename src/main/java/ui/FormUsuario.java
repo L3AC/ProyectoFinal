@@ -21,15 +21,9 @@ public class FormUsuario extends javax.swing.JPanel {
 
     private String accion;
     private Usuario usuarioActual;
-    private CrudUsuarios panelCrudUsuarios; // Referencia al panel anterior
+    private CrudUsuarios panelCrudUsuarios; 
 
-    /**
-     * Creates new form FormUsuario
-     * 
-     * @param accion            "A" para Agregar, "E" para Editar
-     * @param usuario           El usuario a editar (null si es Agregar)
-     * @param panelCrudUsuarios El panel CRUD para regresar
-     */
+
     public FormUsuario(String accion, Usuario usuario, CrudUsuarios panelCrudUsuarios) {
         initComponents();
         this.accion = accion;
@@ -54,15 +48,17 @@ public class FormUsuario extends javax.swing.JPanel {
             ex.printStackTrace();
         }
 
-        cargarRolesEnComboBox();
+        if ("E".equals(accion) && usuario != null && usuario.getRol() != null) {
+            cargarRolesEnComboBox(usuario.getRol().getIdRol()); 
+        } else {
+            cargarRolesEnComboBox(null); 
+        }
 
         // Aplicar validaciones
         Validacion.permitirSolo(txtNombre, "[A-Za-zÁÉÍÓÚáéíóúÑñ ]*", 50);
         Validacion.permitirSolo(txtApellido, "[A-Za-zÁÉÍÓÚáéíóúÑñ ]*", 50);
         Validacion.permitirSolo(txtCorreo, "[A-Za-z0-9@._+\\-]*", 100);
-        // Validacion para contraseña (en tu clase Validacion parece tener un bug con
-        // '^' y '$')
-        // Usaremos una validación simple de longitud
+        // Validacion para contraseña 
         Validacion.permitirSolo(txtContra, ".{0,30}", 30);
 
         if ("E".equals(accion)) {
@@ -76,8 +72,9 @@ public class FormUsuario extends javax.swing.JPanel {
             txtCorreo.setText(usuario.getCorreo());
             seleccionarRolEnComboBox(usuario.getRol().getIdRol());
             txtContra.setText("");
-            lbRol.setVisible(false); // Opcional: podrías permitirlo si modificas el DAO
-            cbRol.setVisible(false); // Opcional:
+            lbRol.setVisible(true);
+            cbRol.setVisible(true);
+            cbRol.setEnabled(false);
 
         } else {
             // Modo AGREGAR
@@ -87,17 +84,25 @@ public class FormUsuario extends javax.swing.JPanel {
             // Ocultar ID
             lbId.setVisible(false);
             txtId.setVisible(false);
+            lbRol.setVisible(true);
+            cbRol.setVisible(true);
+            cbRol.setEnabled(true);
         }
     }
 
     /**
      * Carga los roles desde la BD al JComboBox.
      */
-    private void cargarRolesEnComboBox() {
+    private void cargarRolesEnComboBox(Integer idRolSeleccionado) {
         DefaultComboBoxModel<Rol> model = new DefaultComboBoxModel<>();
         List<Rol> roles = rolDAO.listarRoles();
 
         for (Rol rol : roles) {
+            if (rol == null) continue;
+            // Omitir administrador (id==1) salvo que sea el rol seleccionado que queremos mostrar
+            if (rol.getIdRol() == 1 && (idRolSeleccionado == null || idRolSeleccionado != 1)) {
+                continue;
+            }
             model.addElement(rol);
         }
         cbRol.setModel(model);
@@ -116,6 +121,9 @@ public class FormUsuario extends javax.swing.JPanel {
                 return label;
             }
         });
+
+        // Aseguramos que el combo no sea editable por escritura
+        cbRol.setEditable(false);
     }
 
     /**
@@ -201,9 +209,8 @@ public class FormUsuario extends javax.swing.JPanel {
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
+    // Code">                          
     private void initComponents() {
-        // Estilos
         java.awt.Color colorFondo = new java.awt.Color(0, 140, 153);
         java.awt.Font fuenteLabel = new java.awt.Font("Segoe UI", 1, 14);
         java.awt.Font fuenteInput = new java.awt.Font("Segoe UI", 0, 14);
@@ -211,17 +218,15 @@ public class FormUsuario extends javax.swing.JPanel {
         mainPanel = new javax.swing.JPanel();
         btnVolver = new javax.swing.JButton();
         lbTitulo = new javax.swing.JLabel();
-
-        // Labels
+ 
         lbId = new javax.swing.JLabel();
-        txtId = new javax.swing.JLabel(); // Label para mostrar ID
-        jLabel9 = new javax.swing.JLabel(); // Nombre
-        jLabel1 = new javax.swing.JLabel(); // Apellido
-        lb = new javax.swing.JLabel(); // Correo
-        lbContra = new javax.swing.JLabel(); // Contraseña
-        lbRol = new javax.swing.JLabel(); // Rol
+        txtId = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel(); 
+        jLabel1 = new javax.swing.JLabel(); 
+        lb = new javax.swing.JLabel(); 
+        lbContra = new javax.swing.JLabel(); 
+        lbRol = new javax.swing.JLabel(); 
 
-        // Inputs
         txtNombre = new javax.swing.JTextField();
         txtApellido = new javax.swing.JTextField();
         txtCorreo = new javax.swing.JTextField();
@@ -232,20 +237,13 @@ public class FormUsuario extends javax.swing.JPanel {
         this.setLayout(new java.awt.BorderLayout());
         mainPanel.setBackground(colorFondo);
         mainPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        // --- Botón Volver (Flecha) ---
-        // Asumiendo que ya cargas el ícono en el constructor como tenías antes
         mainPanel.add(btnVolver, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, 50, 40));
-
-        // --- Título ---
         lbTitulo.setFont(new java.awt.Font("Segoe UI", 1, 24));
         lbTitulo.setForeground(java.awt.Color.WHITE);
         lbTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbTitulo.setText("Gestión de Usuario");
         mainPanel.add(lbTitulo, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 300, 40));
 
-        // --- ID (Oculto o visible según lógica, lo ponemos discreto arriba a la
-        // derecha) ---
         lbId.setFont(fuenteLabel);
         lbId.setForeground(java.awt.Color.WHITE);
         lbId.setText("ID:");
@@ -255,9 +253,6 @@ public class FormUsuario extends javax.swing.JPanel {
         txtId.setText("0");
         mainPanel.add(txtId, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 30, 50, -1));
 
-        // --- COLUMNA 1 (Izquierda - X=150) ---
-
-        // Nombre
         jLabel9.setFont(fuenteLabel);
         jLabel9.setForeground(java.awt.Color.WHITE);
         jLabel9.setText("Nombre");
@@ -265,7 +260,6 @@ public class FormUsuario extends javax.swing.JPanel {
         txtNombre.setFont(fuenteInput);
         mainPanel.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 125, 220, 35));
 
-        // Correo
         lb.setFont(fuenteLabel);
         lb.setForeground(java.awt.Color.WHITE);
         lb.setText("Correo Electrónico");
@@ -273,7 +267,6 @@ public class FormUsuario extends javax.swing.JPanel {
         txtCorreo.setFont(fuenteInput);
         mainPanel.add(txtCorreo, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 205, 220, 35));
 
-        // Contraseña
         lbContra.setFont(fuenteLabel);
         lbContra.setForeground(java.awt.Color.WHITE);
         lbContra.setText("Contraseña");
@@ -281,9 +274,7 @@ public class FormUsuario extends javax.swing.JPanel {
         txtContra.setFont(fuenteInput);
         mainPanel.add(txtContra, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 285, 220, 35));
 
-        // --- COLUMNA 2 (Derecha - X=410) ---
 
-        // Apellido
         jLabel1.setFont(fuenteLabel);
         jLabel1.setForeground(java.awt.Color.WHITE);
         jLabel1.setText("Apellido");
@@ -291,7 +282,6 @@ public class FormUsuario extends javax.swing.JPanel {
         txtApellido.setFont(fuenteInput);
         mainPanel.add(txtApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 125, 220, 35));
 
-        // Rol
         lbRol.setFont(fuenteLabel);
         lbRol.setForeground(java.awt.Color.WHITE);
         lbRol.setText("Rol");
@@ -299,7 +289,6 @@ public class FormUsuario extends javax.swing.JPanel {
         cbRol.setFont(fuenteInput);
         mainPanel.add(cbRol, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 205, 220, 35));
 
-        // --- Botón Confirmar (Centrado abajo) ---
         btnConfirmar.setText("Guardar Cambios");
         btnConfirmar.setFont(new java.awt.Font("Segoe UI", 1, 16));
         btnConfirmar.setBackground(new java.awt.Color(255, 255, 255));
@@ -308,7 +297,6 @@ public class FormUsuario extends javax.swing.JPanel {
                 btnConfirmarActionPerformed(evt);
             }
         });
-        // Centrado: (780 - 180) / 2 = 300
         mainPanel.add(btnConfirmar, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 380, 180, 45));
         btnVolver.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

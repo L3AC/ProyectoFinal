@@ -21,6 +21,7 @@ public class CrudConfiguracion extends javax.swing.JPanel {
 
     public CrudConfiguracion() {
         initComponents();
+        setupDiseño();
         TableColumnModel tcm = tabla.getColumnModel();
         TableColumn columna = tcm.getColumn(0);
         tcm.removeColumn(columna);
@@ -216,6 +217,87 @@ public class CrudConfiguracion extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_tablaMouseClicked
 
+    private void setupDiseño() {
+        this.setLayout(new java.awt.BorderLayout());
+        this.add(jPanel1, java.awt.BorderLayout.CENTER);
+
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jPanel1.setBackground(new java.awt.Color(0, 140, 153)); // Azul Turquesa
+
+        java.awt.Font tituloFont = new java.awt.Font("Segoe UI", 1, 24);
+        java.awt.Font labelFont = new java.awt.Font("Segoe UI", 1, 14); // Negrita para títulos de campo
+        java.awt.Font dataFont = new java.awt.Font("Segoe UI", 0, 14);  // Normal para datos
+        java.awt.Color blanco = java.awt.Color.WHITE;
+
+        jLabel8.setText("Configuración de Roles");
+        jLabel8.setFont(tituloFont);
+        jLabel8.setForeground(blanco);
+        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 300, 40));
+
+        lbId.setForeground(blanco);
+        jPanel1.add(lbId, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 20, 50, -1));
+
+        if (jLabel11 != null) {
+            jLabel11.setText("Editando Rol:");
+            jLabel11.setFont(labelFont);
+            jLabel11.setForeground(new java.awt.Color(204, 229, 255)); // Azul muy clarito
+            jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+            jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 80, 100, 30));
+        }
+
+        lbRol.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lbRol.setForeground(java.awt.Color.YELLOW); // Amarillo para resaltar
+        lbRol.setText("Seleccione un rol");
+        jPanel1.add(lbRol, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 80, 300, 30));
+
+        int yLabels = 130;
+        int yInputs = 155;
+
+        jLabel9.setText("Límite Ejemplares");
+        jLabel9.setFont(labelFont);
+        jLabel9.setForeground(blanco);
+        jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, yLabels, 200, -1));
+
+        txtEjemplares.setFont(dataFont);
+        txtEjemplares.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jPanel1.add(txtEjemplares, new org.netbeans.lib.awtextra.AbsoluteConstraints(75, yInputs, 150, 35));
+
+        lb.setText("Días de Préstamo");
+        lb.setFont(labelFont);
+        lb.setForeground(blanco);
+        lb.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel1.add(lb, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, yLabels, 200, -1));
+
+        txtDias.setFont(dataFont);
+        txtDias.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jPanel1.add(txtDias, new org.netbeans.lib.awtextra.AbsoluteConstraints(315, yInputs, 150, 35));
+
+        jLabel2.setText("Mora Diaria ($)");
+        jLabel2.setFont(labelFont);
+        jLabel2.setForeground(blanco);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, yLabels, 200, -1));
+
+        txtMora.setFont(dataFont);
+        txtMora.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jPanel1.add(txtMora, new org.netbeans.lib.awtextra.AbsoluteConstraints(555, yInputs, 150, 35));
+
+        btnEditar.setText("Guardar Cambios");
+        btnEditar.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        btnEditar.setBackground(blanco);
+        btnEditar.setForeground(new java.awt.Color(0, 140, 153)); // Letras turquesas
+        jPanel1.add(btnEditar, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 220, 180, 40));
+
+        tabla.setRowHeight(30);
+        tabla.getTableHeader().setFont(new java.awt.Font("Segoe UI", 1, 14));
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 290, 700, 160));
+
+        jPanel1.revalidate();
+        jPanel1.repaint();
+    }
+    
     private void txtDiasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDiasActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtDiasActionPerformed

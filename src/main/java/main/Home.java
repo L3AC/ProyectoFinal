@@ -11,9 +11,14 @@ import ui.CrudConfiguracion;
 import ui.CrudEjemplares;
 import ui.CrudPrestamos;
 import ui.CrudReservas;
+import java.awt.Color;
 
 public class Home extends javax.swing.JFrame {
 
+    private final Color colorNormal = new Color(153, 102, 0);
+    private final Color colorHover = new  Color(183, 132, 30);
+    private final Color colorActivo = new Color(123, 72, 0);
+    private JLabel labelActual;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Home.class.getName());
     private ImageIcon imagen;
     private ImageIcon icono;
@@ -24,20 +29,30 @@ public class Home extends javax.swing.JFrame {
 
     public Home(Usuario usuario) {
         initComponents();
-        pintarImagen(lbIcono, "/com/mycompany/proyectofinal/img/udb.png");
+        initMenuStyles();
+        setLocationRelativeTo(null);
+        pintarImagen(lbIcono, "/img/udb.png");
     }
 
     private void pintarImagen(JLabel lbl, String ruta) {
-        this.imagen = new ImageIcon(ruta);
-        this.icono = new ImageIcon(
-                this.imagen.getImage().getScaledInstance(
-                        lbl.getWidth(),
-                        lbl.getHeight(),
-                        Image.SCALE_DEFAULT
-                )
-        );
-        lbl.setIcon(this.icono);
-        this.repaint();
+        try {
+            // Usamos getResource para obtener la URL de la imagen dentro del classpath
+            java.net.URL url = getClass().getResource(ruta);
+            if (url != null) {
+                this.imagen = new ImageIcon(url);
+                this.icono = new ImageIcon(
+                        this.imagen.getImage().getScaledInstance(
+                                lbl.getWidth(),
+                                lbl.getHeight(),
+                                Image.SCALE_DEFAULT));
+                lbl.setIcon(this.icono);
+                this.repaint();
+            } else {
+                System.err.println("No se encontró la imagen en la ruta: " + ruta);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -75,6 +90,12 @@ public class Home extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbOpcion1MouseClicked(evt);
             }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lbOpcion1MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lbOpcion1MouseExited(evt);
+            }
         });
 
         lbOpcion2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -84,6 +105,12 @@ public class Home extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbOpcion2MouseClicked(evt);
             }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lbOpcion2MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lbOpcion2MouseExited(evt);
+            }
         });
 
         lbOpcion3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -92,6 +119,12 @@ public class Home extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbOpcion3MouseClicked(evt);
             }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lbOpcion3MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lbOpcion3MouseExited(evt);
+            }
         });
 
         lbOpcion4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -99,6 +132,12 @@ public class Home extends javax.swing.JFrame {
         lbOpcion4.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbOpcion4MouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lbOpcion4MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lbOpcion4MouseExited(evt);
             }
         });
 
@@ -110,7 +149,7 @@ public class Home extends javax.swing.JFrame {
             }
         });
 
-        lbTitulo1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lbTitulo1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         lbTitulo1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbTitulo1.setText("Encargados");
         lbTitulo1.setToolTipText("");
@@ -122,6 +161,12 @@ public class Home extends javax.swing.JFrame {
         lbOpcion6.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbOpcion6MouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lbOpcion6MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lbOpcion6MouseExited(evt);
             }
         });
 
@@ -142,7 +187,7 @@ public class Home extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(lbOpcion8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(lbOpcion6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(lbOpcion6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         menuPanelLayout.setVerticalGroup(
             menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -152,17 +197,17 @@ public class Home extends javax.swing.JFrame {
                 .addComponent(lbTitulo1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(36, 36, 36)
                 .addComponent(lbOpcion1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbOpcion2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addGap(12, 12, 12)
                 .addComponent(lbOpcion6, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbOpcion3, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbOpcion4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                 .addComponent(lbOpcion8, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(21, 21, 21))
+                .addGap(30, 30, 30))
         );
 
         jPanel3.add(menuPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 490));
@@ -177,20 +222,40 @@ public class Home extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void lbOpcion1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion1MouseClicked
+        if (labelActual != null) {
+            labelActual.setBackground(colorNormal);
+        }
+        labelActual = lbOpcion1;
+        lbOpcion1.setBackground(colorActivo);
         cargarPanel(new CrudUsuarios());
     }//GEN-LAST:event_lbOpcion1MouseClicked
 
     private void lbOpcion2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion2MouseClicked
+        if (labelActual != null) {
+            labelActual.setBackground(colorNormal);
+        }
+        labelActual = lbOpcion2;
+        lbOpcion2.setBackground(colorActivo);
         cargarPanel(new CrudEjemplares());
     }//GEN-LAST:event_lbOpcion2MouseClicked
 
     private void lbOpcion3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseClicked
 
         // TODO add your handling code here:
+        if (labelActual != null) {
+            labelActual.setBackground(colorNormal);
+        }
+        labelActual = lbOpcion3;
+        lbOpcion3.setBackground(colorActivo);
         cargarPanel(new CrudPrestamos());
     }//GEN-LAST:event_lbOpcion3MouseClicked
 
     private void lbOpcion4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseClicked
+        if (labelActual != null) {
+            labelActual.setBackground(colorNormal);
+        }
+        labelActual = lbOpcion4;
+        lbOpcion4.setBackground(colorActivo);
         cargarPanel(new CrudConfiguracion());
     }//GEN-LAST:event_lbOpcion4MouseClicked
 
@@ -202,8 +267,83 @@ public class Home extends javax.swing.JFrame {
 
     private void lbOpcion6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseClicked
         // TODO add your handling code here:
+        if (labelActual != null) {
+            labelActual.setBackground(colorNormal);
+        }
+        labelActual = lbOpcion6;
+        lbOpcion6.setBackground(colorActivo);
         cargarPanel(new CrudReservas());
     }//GEN-LAST:event_lbOpcion6MouseClicked
+
+    private void lbOpcion1MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion1MouseEntered
+        // TODO add your handling code here:
+        if (lbOpcion1 != labelActual) {
+            lbOpcion1.setBackground(colorHover);
+        }
+    }//GEN-LAST:event_lbOpcion1MouseEntered
+
+    private void lbOpcion1MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion1MouseExited
+        // TODO add your handling code here:
+        if (lbOpcion1 != labelActual) {
+            lbOpcion1.setBackground(colorNormal);
+        }
+    }//GEN-LAST:event_lbOpcion1MouseExited
+
+    private void lbOpcion2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion2MouseEntered
+        // TODO add your handling code here:
+        if (lbOpcion2 != labelActual) {
+            lbOpcion2.setBackground(colorHover);
+        }
+    }//GEN-LAST:event_lbOpcion2MouseEntered
+
+    private void lbOpcion2MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion2MouseExited
+        // TODO add your handling code here:
+        if (lbOpcion2 != labelActual) {
+            lbOpcion2.setBackground(colorNormal);
+        }
+    }//GEN-LAST:event_lbOpcion2MouseExited
+
+    private void lbOpcion6MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseEntered
+        // TODO add your handling code here:
+        if (lbOpcion6 != labelActual) {
+            lbOpcion6.setBackground(colorHover);
+        }
+    }//GEN-LAST:event_lbOpcion6MouseEntered
+
+    private void lbOpcion6MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion6MouseExited
+        // TODO add your handling code here:
+        if (lbOpcion6 != labelActual) {
+            lbOpcion6.setBackground(colorNormal);
+        }
+    }//GEN-LAST:event_lbOpcion6MouseExited
+
+    private void lbOpcion3MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseEntered
+        // TODO add your handling code here:
+        if (lbOpcion3 != labelActual) {
+            lbOpcion3.setBackground(colorHover);
+        }
+    }//GEN-LAST:event_lbOpcion3MouseEntered
+
+    private void lbOpcion3MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion3MouseExited
+        // TODO add your handling code here:
+        if (lbOpcion3 != labelActual) {
+            lbOpcion3.setBackground(colorNormal);
+        }
+    }//GEN-LAST:event_lbOpcion3MouseExited
+
+    private void lbOpcion4MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseEntered
+        // TODO add your handling code here:
+        if (lbOpcion4 != labelActual) {
+            lbOpcion4.setBackground(colorHover);
+        }
+    }//GEN-LAST:event_lbOpcion4MouseEntered
+
+    private void lbOpcion4MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbOpcion4MouseExited
+        // TODO add your handling code here:
+        if (lbOpcion4 != labelActual) {
+            lbOpcion4.setBackground(colorNormal);
+        }
+    }//GEN-LAST:event_lbOpcion4MouseExited
 
     private void cargarPanel(JPanel panel) {
         mainPanel.removeAll();
@@ -232,6 +372,21 @@ public class Home extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new Home().setVisible(true));
+    }
+
+    private void initMenuStyles() {
+        lbOpcion1.setOpaque(true);
+        lbOpcion2.setOpaque(true);
+        lbOpcion3.setOpaque(true);
+        lbOpcion4.setOpaque(true);
+        lbOpcion6.setOpaque(true);
+
+        lbOpcion1.setBackground(colorNormal);
+        lbOpcion2.setBackground(colorNormal);
+        lbOpcion3.setBackground(colorNormal);
+        lbOpcion4.setBackground(colorNormal);
+        lbOpcion6.setBackground(colorNormal);
+
     }
 
 
